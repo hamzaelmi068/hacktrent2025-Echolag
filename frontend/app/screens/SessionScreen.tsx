@@ -14,7 +14,15 @@ import { useConversation } from "../context/ConversationContext";
 
 const SessionScreen = () => {
   const router = useRouter();
-  const { messages, orderState, sendMessage, isLoading } = useConversation();
+  const {
+    messages,
+    orderState,
+    sendMessage,
+    isLoading,
+    assistantAudioUrl,
+    isSpeaking,
+    speechError,
+  } = useConversation();
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -28,6 +36,7 @@ const SessionScreen = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const liveAudioRef = useRef<HTMLAudioElement | null>(null);
+  const baristaAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -240,6 +249,25 @@ const SessionScreen = () => {
     };
   }, [stopListening]);
 
+  useEffect(() => {
+    if (!assistantAudioUrl || !baristaAudioRef.current) {
+      return;
+    }
+
+    const audioElement = baristaAudioRef.current;
+    const playAudio = async () => {
+      try {
+        audioElement.load();
+        audioElement.currentTime = 0;
+        await audioElement.play();
+      } catch (error) {
+        console.warn("Autoplay prevented for barista audio.", error);
+      }
+    };
+
+    playAudio();
+  }, [assistantAudioUrl]);
+
   const handleFinish = () => {
     stopListening();
     router.push(ROUTES.FEEDBACK);
@@ -324,6 +352,29 @@ const SessionScreen = () => {
             <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{BARISTA_PLACEHOLDER}</p>
             <h2 className="text-lg font-semibold text-slate-900">Barista</h2>
             <p className="text-sm text-slate-600">{latestMessage}</p>
+            <div className="space-y-2">
+              {speechError ? (
+                <p className="text-xs text-red-600">
+                  Unable to play audio: {speechError}
+                </p>
+              ) : null}
+              {assistantAudioUrl ? (
+                <audio
+                  ref={baristaAudioRef}
+                  src={assistantAudioUrl ?? undefined}
+                  className="w-full"
+                  controls
+                  autoPlay
+                  playsInline
+                  aria-label="Barista response audio"
+                />
+              ) : null}
+              {isSpeaking && !assistantAudioUrl ? (
+                <p className="text-xs text-slate-500">
+                  Brewing your barista&apos;s voice...
+                </p>
+              ) : null}
+            </div>
           </div>
         </Card>
 
