@@ -7,10 +7,20 @@ interface CardProps {
 
 const Card = ({ children, className }: CardProps) => {
   const baseStyles =
-    "rounded-xl border border-slate-200 bg-white p-6 shadow-sm";
+    "rounded-2xl shadow-sm border p-8 hover:shadow-md transition-all duration-300";
   const composedClassName = [baseStyles, className].filter(Boolean).join(" ");
-
-  return <section className={composedClassName}>{children}</section>;
+  
+  return (
+    <section 
+      className={composedClassName}
+      style={{
+        backgroundColor: '#FAF8F3',
+        borderColor: '#E5E0D6'
+      }}
+    >
+      {children}
+    </section>
+  );
 };
 
 export default Card;

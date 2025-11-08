@@ -16,8 +16,15 @@ const TranscriptPanel = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+      {title && <h3 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>{title}</h3>}
+      <div 
+        className="rounded-lg border border-dashed p-4 text-sm leading-relaxed"
+        style={{
+          borderColor: '#D4A574',
+          backgroundColor: '#FDFCFA',
+          color: '#6B5D52'
+        }}
+      >
         <p>{displayText}</p>
       </div>
     </div>

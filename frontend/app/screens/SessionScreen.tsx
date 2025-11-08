@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Card from "../components/Card";
 import EmptyState from "../components/EmptyState";
 import Masthead from "../components/Masthead";
-import PrimaryButton from "../components/PrimaryButton";
 import ProgressChips from "../components/ProgressChips";
 import ToastPlaceholder from "../components/ToastPlaceholder";
 import Toolbar from "../components/Toolbar";
@@ -48,8 +47,9 @@ const SessionScreen = () => {
 
     const hasMedia = Boolean(navigator.mediaDevices?.getUserMedia);
     const SpeechRecognitionConstructor =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+
 
     setMediaSupported(hasMedia);
     setRecognitionSupported(Boolean(SpeechRecognitionConstructor));
@@ -317,7 +317,7 @@ const SessionScreen = () => {
   }, [audioUrl]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col" style={{ backgroundColor: '#F5F1E8' }}>
       <Masthead
         title="Session Practice"
         subtitle="Run through a sample order and track your responses."
@@ -329,16 +329,27 @@ const SessionScreen = () => {
               stopListening();
               router.push(ROUTES.HOME);
             }}
-            className="text-sm font-medium text-indigo-600 underline-offset-4 hover:underline"
+            className="text-sm font-medium text-white rounded-full px-6 py-2 transition-all duration-300 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
           >
             Back to Home
           </a>
         }
       />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
+        {/* Barista Card */}
         <Card>
           <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+                <span className="text-white text-xl">☕</span>
+              </div>
+              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Barista</h2>
+            </div>
+            <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{BARISTA_PLACEHOLDER}</p>
             <h2 className="text-lg font-semibold text-slate-900">Barista</h2>
             <p className="text-sm text-slate-600">{latestMessage}</p>
             <div className="space-y-2">
@@ -367,10 +378,17 @@ const SessionScreen = () => {
           </div>
         </Card>
 
+        {/* Transcript Card */}
         <Card>
           <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+                <span className="text-white text-xl">📝</span>
+              </div>
+              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Your Transcript</h2>
+            </div>
             <TranscriptPanel
-              title="Your Transcript"
+              title=""
               content={transcript}
               placeholderText="Start the session to see your words appear in real time."
             />
@@ -402,11 +420,17 @@ const SessionScreen = () => {
           </div>
         </Card>
 
+        {/* Recording Playback Card */}
         <Card>
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Recording Playback
-            </h2>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+                <span className="text-white text-xl">🎤</span>
+              </div>
+              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+                Recording Playback
+              </h2>
+            </div>
             {audioUrl ? (
               <audio
                 controls
@@ -415,14 +439,19 @@ const SessionScreen = () => {
                 aria-label="Session recording playback"
               />
             ) : (
-              <EmptyState
-                title="No recording yet"
-                helperText="Start the session to capture audio and play it back here."
-              />
+              <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
+                <div className="text-6xl mb-4">🎤</div>
+                <h3 className="text-xl font-semibold" style={{ color: '#4A3F35' }}>Ready to practice?</h3>
+                <p className="text-center" style={{ color: '#6B5D52' }}>Hit Start to begin!</p>
+              </div>
             )}
           </div>
         </Card>
 
+        {/* Order Checklist */}
+        <section aria-labelledby="progress-heading" className="space-y-4">
+          <h2 id="progress-heading" className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+            Order Checklist
         <section aria-labelledby="progress-heading" className="space-y-3">
           <h2
             id="progress-heading"
@@ -437,10 +466,56 @@ const SessionScreen = () => {
           />
         </section>
 
+        {/* Toolbar */}
         <Toolbar>
-          <PrimaryButton
-            label={isListening ? "Listening..." : "Start"}
+          <button
             onClick={startListening}
+            disabled={isListening}
+            className="inline-flex items-center gap-2 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-md transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
+            style={{ backgroundColor: '#8B9D83' }}
+            onMouseEnter={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#7A8A6F')}
+            onMouseLeave={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#8B9D83')}
+          >
+            <span>🎤</span>
+            {isListening ? "Listening..." : "Start"}
+          </button>
+          <button
+            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+            style={{ 
+              borderColor: '#8B7355',
+              color: '#4A3F35',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#C4D0BC';
+              e.currentTarget.style.borderColor = '#8B9D83';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = '#8B7355';
+            }}
+          >
+            Next Line
+          </button>
+          <button
+            onClick={handleFinish}
+            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+            style={{ 
+              borderColor: '#8B7355',
+              color: '#4A3F35',
+              backgroundColor: 'transparent'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#C4D0BC';
+              e.currentTarget.style.borderColor = '#8B9D83';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.borderColor = '#8B7355';
+            }}
+          >
+            Finish
+          </button>
             disabled={isListening || isLoading}
           />
           <PrimaryButton
@@ -456,17 +531,22 @@ const SessionScreen = () => {
             disabled={!isOrderComplete}
           />
           <span
-            className={`ml-auto inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
-              isListening
-                ? "bg-red-100 text-red-700"
-                : "bg-slate-200 text-slate-600"
-            }`}
+            className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
+            style={isListening ? {
+              backgroundColor: '#F5E6E6',
+              color: '#8B5A5A'
+            } : {
+              backgroundColor: '#C4D0BC',
+              color: '#4A3F35'
+            }}
           >
             <span
               aria-hidden="true"
-              className={`h-2 w-2 rounded-full ${
-                isListening ? "bg-red-500 animate-pulse" : "bg-slate-400"
-              }`}
+              className="h-2 w-2 rounded-full"
+              style={{
+                backgroundColor: isListening ? '#D4A574' : '#8B9D83',
+                animation: isListening ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+              }}
             />
             {micStatusLabel}
           </span>
