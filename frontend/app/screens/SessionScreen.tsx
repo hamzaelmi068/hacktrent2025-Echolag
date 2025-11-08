@@ -10,7 +10,7 @@ import ProgressChips from "../components/ProgressChips";
 import ToastPlaceholder from "../components/ToastPlaceholder";
 import Toolbar from "../components/Toolbar";
 import TranscriptPanel from "../components/TranscriptPanel";
-import { BARISTA_PLACEHOLDER } from "../lib/placeholders";
+import { getBaristaResponse, OrderState } from "../lib/barista-responses";
 import { ROUTES } from "../lib/routes";
 
 const SessionScreen = () => {
@@ -22,6 +22,12 @@ const SessionScreen = () => {
   const [recognitionSupported, setRecognitionSupported] = useState(true);
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
+  const [orderState, setOrderState] = useState<OrderState>({
+    drink: false,
+    size: false,
+    milk: false,
+    name: false,
+  });
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -37,22 +43,8 @@ const SessionScreen = () => {
 
     const hasMedia = Boolean(navigator.mediaDevices?.getUserMedia);
     const SpeechRecognitionConstructor =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    setMediaSupported(hasMedia);
-    setRecognitionSupported(Boolean(SpeechRecognitionConstructor));
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      setRecognitionSupported(false);
-      setMediaSupported(false);
-      return;
-    }
-
-    const hasMedia = !!navigator.mediaDevices?.getUserMedia;
-    const SpeechRecognitionConstructor =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     setMediaSupported(hasMedia);
     setRecognitionSupported(Boolean(SpeechRecognitionConstructor));
@@ -121,7 +113,10 @@ const SessionScreen = () => {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
       mediaStreamRef.current = stream;
       audioChunksRef.current = [];
       if (audioUrl) {
@@ -138,14 +133,12 @@ const SessionScreen = () => {
         liveAudioRef.current.srcObject = stream;
         liveAudioRef.current.autoplay = true;
         liveAudioRef.current.muted = true;
-        liveAudioRef.current
-          .play()
-          .catch((error) => {
-            console.warn(
-              "Autoplay prevented. Audio will remain muted until user interacts.",
-              error
-            );
-          });
+        liveAudioRef.current.play().catch((error) => {
+          console.warn(
+            "Autoplay prevented. Audio will remain muted until user interacts.",
+            error
+          );
+        });
       }
     } catch (error) {
       console.error("Microphone permission error", error);
@@ -199,7 +192,11 @@ const SessionScreen = () => {
       }
     }
 
-    if (mediaStreamRef.current && typeof window !== "undefined" && window.MediaRecorder) {
+    if (
+      mediaStreamRef.current &&
+      typeof window !== "undefined" &&
+      window.MediaRecorder
+    ) {
       const recorder = new window.MediaRecorder(mediaStreamRef.current);
       mediaRecorderRef.current = recorder;
 
@@ -224,7 +221,10 @@ const SessionScreen = () => {
         console.error("MediaRecorder start error", error);
         setStatusMessage("Unable to record audio preview.");
       }
-    } else if (typeof window !== "undefined" && typeof window.MediaRecorder === "undefined") {
+    } else if (
+      typeof window !== "undefined" &&
+      typeof window.MediaRecorder === "undefined"
+    ) {
       setStatusMessage("Recording preview is not supported in this browser.");
     }
 
@@ -271,6 +271,18 @@ const SessionScreen = () => {
     }
   };
 
+  const handleNextLine = () => {
+    if (!orderState.drink) {
+      setOrderState({ ...orderState, drink: true });
+    } else if (!orderState.size) {
+      setOrderState({ ...orderState, size: true });
+    } else if (!orderState.milk) {
+      setOrderState({ ...orderState, milk: true });
+    } else if (!orderState.name) {
+      setOrderState({ ...orderState, name: true });
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (audioUrl) {
@@ -303,7 +315,9 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-slate-900">Barista</h2>
-            <p className="text-sm text-slate-600">{BARISTA_PLACEHOLDER}</p>
+            <p className="text-sm text-slate-600">
+              {getBaristaResponse(orderState)}
+            </p>
           </div>
         </Card>
 
@@ -324,9 +338,12 @@ const SessionScreen = () => {
             ) : null}
             {savedTranscript !== null ? (
               <div className="rounded-lg border border-slate-200 bg-white/70 p-4">
-                <h3 className="text-sm font-semibold text-slate-800">Saved Transcript</h3>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Saved Transcript
+                </h3>
                 <p className="mt-2 text-sm text-slate-600 break-words whitespace-pre-wrap">
-                  {savedTranscript || "No transcript captured during this session."}
+                  {savedTranscript ||
+                    "No transcript captured during this session."}
                 </p>
               </div>
             ) : (
@@ -359,10 +376,18 @@ const SessionScreen = () => {
         </Card>
 
         <section aria-labelledby="progress-heading" className="space-y-3">
-          <h2 id="progress-heading" className="text-lg font-semibold text-slate-900">
+          <h2
+            id="progress-heading"
+            className="text-lg font-semibold text-slate-900"
+          >
             Order Checklist
           </h2>
-          <ProgressChips />
+          <ProgressChips
+            drink={orderState.drink}
+            size={orderState.size}
+            milk={orderState.milk}
+            name={orderState.name}
+          />
         </section>
 
         <Toolbar>
@@ -377,8 +402,17 @@ const SessionScreen = () => {
             onClick={handleStopAndSave}
             disabled={!isListening && !transcript.trim()}
           />
-          <PrimaryButton label="Next Line" variant="neutral" />
-          <PrimaryButton label="Finish" variant="neutral" onClick={handleFinish} />
+          <PrimaryButton
+            label="Next Line"
+            variant="neutral"
+            onClick={handleNextLine}
+            disabled={Object.values(orderState).every(Boolean)}
+          />
+          <PrimaryButton
+            label="Finish"
+            variant="neutral"
+            onClick={handleFinish}
+          />
           <span
             className={`ml-auto inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
               isListening
@@ -410,4 +444,3 @@ const SessionScreen = () => {
 };
 
 export default SessionScreen;
-
