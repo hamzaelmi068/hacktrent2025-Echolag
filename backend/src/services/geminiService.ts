@@ -38,7 +38,7 @@ export class GeminiService {
         .map(([key, value]) => `${key}: ${value ? 'completed' : 'pending'}`)
         .join('\n');
 
-      const conversationContext = conversationHistory
+      const conversationContext = (conversationHistory ?? [])
         .map(msg => `${msg.role}: ${msg.content}`)
         .join('\n');
 
