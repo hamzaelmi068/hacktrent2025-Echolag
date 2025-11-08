@@ -10,11 +10,12 @@ import ProgressChips from "../components/ProgressChips";
 import ToastPlaceholder from "../components/ToastPlaceholder";
 import Toolbar from "../components/Toolbar";
 import TranscriptPanel from "../components/TranscriptPanel";
-import { getBaristaResponse, OrderState } from "../lib/barista-responses";
 import { ROUTES } from "../lib/routes";
+import { useConversation } from "../context/ConversationContext";
 
 const SessionScreen = () => {
   const router = useRouter();
+  const { messages, orderState, sendMessage, isLoading } = useConversation();
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -22,12 +23,7 @@ const SessionScreen = () => {
   const [recognitionSupported, setRecognitionSupported] = useState(true);
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
-  const [orderState, setOrderState] = useState<OrderState>({
-    drink: false,
-    size: false,
-    milk: false,
-    name: false,
-  });
+
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -259,29 +255,30 @@ const SessionScreen = () => {
     return "Mic is OFF";
   }, [isListening, mediaSupported]);
 
-  const handleStopAndSave = () => {
+  const handleStopAndSave = async () => {
     const snapshot = transcript.trim();
     stopListening();
     if (snapshot) {
       setSavedTranscript(snapshot);
-      setStatusMessage("Transcript saved locally. Copy or restart when ready.");
+      setStatusMessage("Processing your response...");
+      await sendMessage(snapshot);
+      setStatusMessage("Response processed. Continue when ready.");
     } else {
       setSavedTranscript("");
-      setStatusMessage("Transcript saved (no speech detected).");
+      setStatusMessage("No speech detected. Try again.");
     }
   };
 
-  const handleNextLine = () => {
-    if (!orderState.drink) {
-      setOrderState({ ...orderState, drink: true });
-    } else if (!orderState.size) {
-      setOrderState({ ...orderState, size: true });
-    } else if (!orderState.milk) {
-      setOrderState({ ...orderState, milk: true });
-    } else if (!orderState.name) {
-      setOrderState({ ...orderState, name: true });
-    }
-  };
+  const latestMessage = useMemo(() => {
+    return (
+      messages[messages.length - 1]?.content ||
+      "Welcome! I'll be your barista today. What can I get for you?"
+    );
+  }, [messages]);
+
+  const isOrderComplete = useMemo(() => {
+    return orderState?.completed ?? false;
+  }, [orderState]);
 
   useEffect(() => {
     return () => {
@@ -315,9 +312,7 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-3">
             <h2 className="text-lg font-semibold text-slate-900">Barista</h2>
-            <p className="text-sm text-slate-600">
-              {getBaristaResponse(orderState)}
-            </p>
+            <p className="text-sm text-slate-600">{latestMessage}</p>
           </div>
         </Card>
 
@@ -336,20 +331,22 @@ const SessionScreen = () => {
                 className="bg-slate-100"
               />
             ) : null}
-            {savedTranscript !== null ? (
-              <div className="rounded-lg border border-slate-200 bg-white/70 p-4">
+            {messages.length > 0 && (
+              <div className="space-y-4 rounded-lg border border-slate-200 bg-white/70 p-4">
                 <h3 className="text-sm font-semibold text-slate-800">
-                  Saved Transcript
+                  Conversation History
                 </h3>
-                <p className="mt-2 text-sm text-slate-600 break-words whitespace-pre-wrap">
-                  {savedTranscript ||
-                    "No transcript captured during this session."}
-                </p>
+                {messages.map((msg, i) => (
+                  <div key={i} className="space-y-1">
+                    <p className="text-xs font-medium text-slate-500">
+                      {msg.role === "user" ? "You" : "Barista"}:
+                    </p>
+                    <p className="text-sm text-slate-600 break-words whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p className="text-xs text-slate-500">
-                Stop the session to save a snapshot of your transcript.
-              </p>
             )}
           </div>
         </Card>
@@ -380,13 +377,12 @@ const SessionScreen = () => {
             id="progress-heading"
             className="text-lg font-semibold text-slate-900"
           >
-            Order Checklist
+            Order Progress
           </h2>
           <ProgressChips
-            drink={orderState.drink}
-            size={orderState.size}
-            milk={orderState.milk}
-            name={orderState.name}
+            currentStep={orderState?.currentStep ?? 0}
+            orderItems={orderState?.orderItems ?? []}
+            completed={orderState?.completed ?? false}
           />
         </section>
 
@@ -394,24 +390,19 @@ const SessionScreen = () => {
           <PrimaryButton
             label={isListening ? "Listening..." : "Start"}
             onClick={startListening}
-            disabled={isListening}
+            disabled={isListening || isLoading}
           />
           <PrimaryButton
-            label="Stop & Save"
+            label={isLoading ? "Processing..." : "Stop & Send"}
             variant="neutral"
             onClick={handleStopAndSave}
-            disabled={!isListening && !transcript.trim()}
-          />
-          <PrimaryButton
-            label="Next Line"
-            variant="neutral"
-            onClick={handleNextLine}
-            disabled={Object.values(orderState).every(Boolean)}
+            disabled={(!isListening && !transcript.trim()) || isLoading}
           />
           <PrimaryButton
             label="Finish"
             variant="neutral"
             onClick={handleFinish}
+            disabled={!isOrderComplete}
           />
           <span
             className={`ml-auto inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${
