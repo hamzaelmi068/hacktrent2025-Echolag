@@ -447,17 +447,10 @@ const SessionScreen = () => {
             )}
           </div>
         </Card>
-
         {/* Order Checklist */}
         <section aria-labelledby="progress-heading" className="space-y-4">
           <h2 id="progress-heading" className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
             Order Checklist
-        <section aria-labelledby="progress-heading" className="space-y-3">
-          <h2
-            id="progress-heading"
-            className="text-lg font-semibold text-slate-900"
-          >
-            Order Progress
           </h2>
           <ProgressChips
             currentStep={orderState?.currentStep ?? 0}
@@ -479,35 +472,44 @@ const SessionScreen = () => {
             <span>🎤</span>
             {isListening ? "Listening..." : "Start"}
           </button>
+
           <button
-            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+            onClick={handleStopAndSave}
+            disabled={(!isListening && !transcript.trim()) || isLoading}
+            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ 
               borderColor: '#8B7355',
               color: '#4A3F35',
               backgroundColor: 'transparent'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C4D0BC';
-              e.currentTarget.style.borderColor = '#8B9D83';
+              if (!isLoading && (isListening || transcript.trim())) {
+                e.currentTarget.style.backgroundColor = '#C4D0BC';
+                e.currentTarget.style.borderColor = '#8B9D83';
+              }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
               e.currentTarget.style.borderColor = '#8B7355';
             }}
           >
-            Next Line
+            {isLoading ? "Processing..." : "Stop & Send"}
           </button>
+
           <button
             onClick={handleFinish}
-            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+            disabled={!isOrderComplete}
+            className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ 
               borderColor: '#8B7355',
               color: '#4A3F35',
               backgroundColor: 'transparent'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C4D0BC';
-              e.currentTarget.style.borderColor = '#8B9D83';
+              if (isOrderComplete) {
+                e.currentTarget.style.backgroundColor = '#C4D0BC';
+                e.currentTarget.style.borderColor = '#8B9D83';
+              }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
@@ -516,20 +518,7 @@ const SessionScreen = () => {
           >
             Finish
           </button>
-            disabled={isListening || isLoading}
-          />
-          <PrimaryButton
-            label={isLoading ? "Processing..." : "Stop & Send"}
-            variant="neutral"
-            onClick={handleStopAndSave}
-            disabled={(!isListening && !transcript.trim()) || isLoading}
-          />
-          <PrimaryButton
-            label="Finish"
-            variant="neutral"
-            onClick={handleFinish}
-            disabled={!isOrderComplete}
-          />
+
           <span
             className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
             style={isListening ? {
@@ -554,6 +543,7 @@ const SessionScreen = () => {
 
         <ToastPlaceholder message={statusMessage} />
       </main>
+
       <audio
         ref={liveAudioRef}
         aria-hidden="true"
