@@ -10,6 +10,7 @@ import ToastPlaceholder from "../components/ToastPlaceholder";
 import Toolbar from "../components/Toolbar";
 import TranscriptPanel from "../components/TranscriptPanel";
 import { ROUTES } from "../lib/routes";
+import { BARISTA_PLACEHOLDER } from "../lib/placeholders";
 import { useConversation } from "../context/ConversationContext";
 
 const SessionScreen = () => {
