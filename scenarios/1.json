@@ -1,0 +1,71 @@
+{
+    "title": "Matcha Latte & Snack Order",
+    "setting": "Morning rush at EchoLag Café with a returning guest.",
+    "script": [
+      {
+        "role": "barista",
+        "line": "Good morning! Welcome back to EchoLag Café. What can I start for you today?"
+      },
+      {
+        "role": "user",
+        "line": "Hi! Can I get an iced matcha latte with oat milk?"
+      },
+      {
+        "role": "barista",
+        "line": "Absolutely. Just to confirm: one iced matcha latte made with oat milk. Would you like it sweetened or unsweetened?"
+      },
+      {
+        "role": "user",
+        "line": "Lightly sweetened would be great."
+      },
+      {
+        "role": "barista",
+        "line": "Got it—lightly sweetened. What size works for you today?"
+      },
+      {
+        "role": "user",
+        "line": "Let me get a medium."
+      },
+      {
+        "role": "barista",
+        "line": "Perfect, that's a medium iced matcha latte with oat milk, lightly sweetened."
+      },
+      {
+        "role": "barista",
+        "line": "Would you like to add anything to eat this morning? We just pulled a fresh tray of matcha shortbread and blueberry chia bites."
+      },
+      {
+        "role": "user",
+        "line": "Oh, those sound good. I'll take an order of the blueberry chia bites."
+      },
+      {
+        "role": "barista",
+        "line": "Great choice! One blueberry chia bites—would you like those warmed up?"
+      },
+      {
+        "role": "user",
+        "line": "No thanks, room temperature is fine."
+      },
+      {
+        "role": "barista",
+        "line": "So that's a medium iced matcha latte with oat milk, lightly sweetened, and one order of blueberry chia bites at room temperature. Anything else for you?"
+      },
+      {
+        "role": "user",
+        "line": "Nope, that'll do it."
+      },
+      {
+        "role": "barista",
+        "line": "Awesome. Your total today is $8.45. You can tap whenever you're ready."
+      },
+      {
+        "role": "barista",
+        "line": "We'll have your drink and snack ready at the end of the counter. Thanks for stopping by, and enjoy your matcha!"
+      }
+    ],
+    "coachingNotes": [
+      "Keep tone upbeat and confident; mirror the guest's order back clearly.",
+      "Follow the checklist: drink, size, milk, name.",
+      "Offer reheating or plating options for snacks when appropriate."
+    ]
+  }
