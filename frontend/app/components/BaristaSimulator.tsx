@@ -289,11 +289,6 @@ const BaristaSimulator = () => {
             accentColor: 0x3f7a9d,
           })
           createStickFigure(this, "barista", {
-            headColor: 0xd8a372,
-            bodyColor: 0x2a1e15,
-            accentColor: 0x5f8e5c,
-          })
-          createStickFigure(this, "customer", {
             headColor: 0xa16944,
             bodyColor: 0x1f2a30,
             accentColor: 0xb48ac2,
@@ -357,14 +352,9 @@ const BaristaSimulator = () => {
 
         //   const counter = this.physics.add.staticImage(660, 240, "counter").setOrigin(0.5, 0.6)
 
-          const tableL = this.add.image(340, 210, "tableL").setDepth(2).setAlpha(0.95)
-          tableL.setScale(0.9, 0.85)
+          this.barista = this.physics.add.staticSprite(160, 160, "barista").setDepth(12)
 
-          this.barista = this.physics.add.staticSprite(340, 195, "barista").setDepth(1)
-
-          // Removed customer sprites near the menu board to declutter the space
-
-          const welcomeStation = this.add.container(160, 160).setDepth(10)
+          const welcomeStation = this.add.container(160, 160).setDepth(11)
 
           const stationBase = this.add.rectangle(0, 70, 200, 90, 0x6f4328, 1).setOrigin(0.5)
           const stationInset = this.add.rectangle(0, 70, 150, 60, 0x8b5128, 0.9).setOrigin(0.5)
@@ -393,8 +383,6 @@ const BaristaSimulator = () => {
             )
           }
 
-          const baristaSprite = this.add.image(-10, 10, "barista").setScale(0.9)
-
           welcomeStation.add([
             stationBase,
             stationInset,
@@ -407,7 +395,6 @@ const BaristaSimulator = () => {
             pourOverCup,
             pourOverTop,
             cupsGroup,
-            baristaSprite,
           ])
 
           this.player = this.physics.add.sprite(240, 360, "player")
