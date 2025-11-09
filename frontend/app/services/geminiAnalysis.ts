@@ -6,6 +6,7 @@ export interface GeminiAnalysisResponse {
   clarityScore: number;
   pronunciationScore: number;
   fluencyScore: number;
+  averageScore: number;
 }
 
 /**
@@ -16,12 +17,11 @@ export const analyzeSessionWithGemini = async (
   metrics: {
     duration: number;
     wordCount: number;
-    averagePause: number;
     wordsPerMinute: number;
   }
 ): Promise<GeminiAnalysisResponse> => {
   try {
-    const response = await fetch('http://localhost:3001/api/analyze', {
+    const response = await fetch('http://localhost:3001/api/analyze-session', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,6 @@ export const analyzeSessionWithGemini = async (
         transcript,
         duration: metrics.duration,
         wordCount: metrics.wordCount,
-        averagePause: metrics.averagePause,
         wordsPerMinute: metrics.wordsPerMinute,
       }),
     });
@@ -46,6 +45,15 @@ export const analyzeSessionWithGemini = async (
     analysis.clarityScore = Math.max(0, Math.min(100, analysis.clarityScore || 0));
     analysis.pronunciationScore = Math.max(0, Math.min(100, analysis.pronunciationScore || 0));
     analysis.fluencyScore = Math.max(0, Math.min(100, analysis.fluencyScore || 0));
+    analysis.averageScore = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(
+          (analysis.clarityScore + analysis.pronunciationScore + analysis.fluencyScore) / 3
+        )
+      )
+    );
     
     return analysis;
   } catch (error) {

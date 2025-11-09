@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import baristaRoutes from './routes/baristaRoutes';
+import analysisRoutes from './routes/analysisRoutes';
 
 // Load environment variables from backend root directory
 dotenv.config({ path: path.join(process.cwd(), '.env') });
@@ -42,6 +43,7 @@ app.get('/health', (_, res) => {
 
 // API routes
 app.use('/api', baristaRoutes);
+app.use('/api', analysisRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -69,5 +71,5 @@ app.listen(port, () => {
   console.log('- GET  /health');
   console.log('- POST /api/conversation');
   console.log('- GET  /api/reset');
-  console.log('- POST /api/analyze');
+  console.log('- POST /api/analyze-session');
 });
