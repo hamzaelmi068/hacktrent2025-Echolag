@@ -1,5 +1,6 @@
 "use client"
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useConversation } from "../context/ConversationContext"
 
 type PhaserModule = typeof import("phaser")
 type ArcadeBody = import("phaser").Physics.Arcade.Body
@@ -7,21 +8,40 @@ type ArcadeStaticBody = import("phaser").Physics.Arcade.StaticBody
 
 type DialogueStep = "idle" | "drink" | "size" | "milk" | "name" | "summary"
 
+type ActiveOrderStep = Exclude<DialogueStep, "idle" | "summary">
+
 type DialogueState = {
   step: DialogueStep
-  selections: {
-    drink?: string
-    size?: string
-    milk?: string
-    name?: string
-  }
   startedAt?: number
   finishedAt?: number
 }
 
-const DRINK_OPTIONS = ["Latte", "Cappuccino", "Cold Brew"]
-const SIZE_OPTIONS = ["Small", "Medium", "Large"]
-const MILK_OPTIONS = ["Whole", "Oat", "Almond"]
+const ORDER_SEQUENCE: Array<{
+  key: ActiveOrderStep
+  title: string
+  prompt: string
+}> = [
+  {
+    key: "drink",
+    title: "Drink Preference",
+    prompt: "Ask what drink the customer would like.",
+  },
+  {
+    key: "size",
+    title: "Drink Size",
+    prompt: "Confirm the size the customer prefers.",
+  },
+  {
+    key: "milk",
+    title: "Milk Choice",
+    prompt: "Ask about their milk or dairy preference.",
+  },
+  {
+    key: "name",
+    title: "Pickup Name",
+    prompt: "Get the name to call out when the drink is ready.",
+  },
+]
 
 const PANEL_BG = "linear-gradient(180deg, rgba(88, 57, 39, 0.97) 0%, rgba(64, 41, 28, 0.98) 100%)"
 
@@ -35,29 +55,29 @@ const BaristaSimulator = () => {
   const gameRef = useRef<any>(null)
   const ambientSourceRef = useRef<AudioBufferSourceNode | null>(null)
 
+  const { orderState, isSpeaking } = useConversation()
+
   const [promptVisible, setPromptVisible] = useState(false)
   const [dialogue, setDialogue] = useState<DialogueState>({
     step: "idle",
-    selections: {},
   })
-  const [nameInput, setNameInput] = useState("")
 
   const isDialogueActive = dialogue.step !== "idle" && dialogue.step !== "summary"
 
   const startDialogue = useCallback(() => {
     setDialogue({
       step: "drink",
-      selections: {},
       startedAt: performance.now(),
+      finishedAt: undefined,
     })
-    setNameInput("")
     setPromptVisible(false)
   }, [])
 
   const closeSummary = () => {
     setDialogue({
       step: "idle",
-      selections: {},
+      startedAt: undefined,
+      finishedAt: undefined,
     })
     setPromptVisible(false)
   }
@@ -81,6 +101,53 @@ const BaristaSimulator = () => {
   callbacksRef.current.startDialogue = startDialogue
   callbacksRef.current.setPromptVisible = setPromptVisible
   callbacksRef.current.isDialogueActive = isDialogueActive
+
+  const isOrderComplete = orderState.drink && orderState.size && orderState.milk && orderState.name
+  const completedSteps = [orderState.drink, orderState.size, orderState.milk, orderState.name].filter(Boolean).length
+
+  useEffect(() => {
+    if (dialogue.step === "idle") {
+      return
+    }
+
+    const targetStep: DialogueStep = !orderState.drink
+      ? "drink"
+      : !orderState.size
+        ? "size"
+        : !orderState.milk
+          ? "milk"
+          : !orderState.name
+            ? "name"
+            : "summary"
+
+    setDialogue((prev) => {
+      if (prev.step === "idle") {
+        return prev
+      }
+      if (prev.step === targetStep) {
+        if (targetStep === "summary" && !prev.finishedAt) {
+          return {
+            ...prev,
+            finishedAt: performance.now(),
+          }
+        }
+        return prev
+      }
+
+      if (targetStep === "summary") {
+        return {
+          ...prev,
+          step: "summary",
+          finishedAt: prev.finishedAt ?? performance.now(),
+        }
+      }
+
+      return {
+        ...prev,
+        step: targetStep,
+      }
+    })
+  }, [dialogue.step, orderState.drink, orderState.size, orderState.milk, orderState.name])
 
   const ensureAmbientAudio = useCallback((scene: any) => {
     if (!scene.sound.context) {
@@ -416,117 +483,70 @@ const BaristaSimulator = () => {
     }
   }, [ensureAmbientAudio])
 
-  const handleOptionSelect = useCallback((value: string) => {
-    setDialogue((prev) => {
-      if (prev.step === "drink") {
-        return {
-          ...prev,
-          step: "size",
-          selections: { ...prev.selections, drink: value },
-        }
-      }
-      if (prev.step === "size") {
-        return {
-          ...prev,
-          step: "milk",
-          selections: { ...prev.selections, size: value },
-        }
-      }
-      if (prev.step === "milk") {
-        return {
-          ...prev,
-          step: "name",
-          selections: { ...prev.selections, milk: value },
-        }
-      }
-      return prev
-    })
-  }, [])
-
-  const handleNameSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!nameInput.trim()) {
-      return
-    }
-    setDialogue((prev) => {
-      const selections = { ...prev.selections, name: nameInput.trim() }
-      return {
-        step: "summary",
-        selections,
-        startedAt: prev.startedAt,
-        finishedAt: performance.now(),
-      }
-    })
-  }
-
-  const totalSteps =
-    dialogue.selections.drink && dialogue.selections.size && dialogue.selections.milk && dialogue.selections.name
-      ? 4
-      : Object.values(dialogue.selections).filter(Boolean).length
+  const totalSteps = completedSteps
   const totalTime = dialogue.startedAt && dialogue.finishedAt ? (dialogue.finishedAt - dialogue.startedAt) / 1000 : null
 
-  useEffect(() => {
-    if (!isDialogueActive || dialogue.step === "name") {
-      return
+  const renderVoiceGuidance = () => {
+    if (dialogue.step === "summary" || dialogue.step === "idle") {
+      return null
     }
 
-    const options =
-      dialogue.step === "drink"
-        ? DRINK_OPTIONS
-        : dialogue.step === "size"
-          ? SIZE_OPTIONS
-          : dialogue.step === "milk"
-            ? MILK_OPTIONS
-            : []
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const choiceIndex = Number.parseInt(event.key, 10) - 1
-      if (Number.isNaN(choiceIndex) || choiceIndex < 0 || choiceIndex >= options.length) {
-        return
-      }
-      event.preventDefault()
-      handleOptionSelect(options[choiceIndex])
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [dialogue.step, handleOptionSelect, isDialogueActive])
-
-  const renderOptions = () => {
-    let title = ""
-    let options: string[] = []
-    if (dialogue.step === "drink") {
-      title = "What can I get started for you?"
-      options = DRINK_OPTIONS
-    } else if (dialogue.step === "size") {
-      title = "What size would you like?"
-      options = SIZE_OPTIONS
-    } else if (dialogue.step === "milk") {
-      title = "Which milk do you prefer?"
-      options = MILK_OPTIONS
-    }
+    const activeStep =
+      ORDER_SEQUENCE.find((step) => step.key === dialogue.step) ??
+      ORDER_SEQUENCE.find((step) => !orderState[step.key]) ??
+      ORDER_SEQUENCE[ORDER_SEQUENCE.length - 1]
 
     return (
       <>
         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-amber-200/70">
           <span className="inline-block h-px w-6 bg-amber-200/30"></span>
-          Taking your order
+          Voice Ordering
         </div>
-        <h3 className="mt-3 font-serif text-2xl font-medium leading-relaxed text-amber-50">{title}</h3>
-        <p className="mt-1 text-sm leading-relaxed text-amber-100/60">Select an option below to continue</p>
-        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {options.map((option, index) => (
-            <button
-              key={option}
-              onClick={() => handleOptionSelect(option)}
-              className="group flex items-center gap-4 rounded-2xl border border-amber-200/20 bg-linear-to-br from-amber-50/10 to-amber-100/5 px-5 py-4 text-left font-medium text-amber-50 shadow-lg backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] hover:border-amber-200/40 hover:bg-linear-to-br hover:from-amber-50/15 hover:to-amber-100/10 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-300/50"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-amber-400 to-amber-600 font-bold text-amber-950 shadow-md transition-transform duration-200 group-hover:scale-110">
-                {index + 1}
-              </span>
-              <span className="text-base">{option}</span>
-            </button>
-          ))}
+        <h3 className="mt-3 font-serif text-2xl font-medium leading-relaxed text-amber-50">{activeStep.prompt}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-amber-100/70">
+          Speak naturally—no buttons needed. Each section below updates automatically as you complete it with your
+          voice.
+        </p>
+        <div className="mt-6 space-y-3">
+          {ORDER_SEQUENCE.map((step) => {
+            const status = orderState[step.key]
+              ? "complete"
+              : activeStep?.key === step.key
+                ? "active"
+                : "pending"
+            const statusStyles =
+              status === "complete"
+                ? "border-emerald-300/40 from-emerald-500/15 to-emerald-400/10 text-emerald-100"
+                : status === "active"
+                  ? "border-amber-200/40 from-amber-300/15 to-amber-200/10 text-amber-50"
+                  : "border-amber-200/15 from-amber-50/5 to-amber-100/5 text-amber-100/80"
+            const indicatorStyles =
+              status === "complete"
+                ? "bg-emerald-500 text-emerald-950"
+                : status === "active"
+                  ? "bg-amber-400 text-amber-950 animate-pulse"
+                  : "bg-amber-900/50 text-amber-200/70"
+            const indicatorLabel = status === "complete" ? "✓" : status === "active" ? "●" : "•"
+            const statusText =
+              status === "complete" ? "Captured" : status === "active" ? "Listening now" : "Waiting for voice input"
+
+            return (
+              <div
+                key={step.key}
+                className={`flex items-center gap-4 rounded-2xl border bg-linear-to-br px-5 py-4 shadow-lg backdrop-blur-sm transition-all duration-200 ${statusStyles}`}
+              >
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-semibold shadow-md transition-transform duration-200 ${indicatorStyles}`}
+                >
+                  {indicatorLabel}
+                </span>
+                <div className="flex flex-col">
+                  <span className="text-base font-medium">{step.title}</span>
+                  <span className="text-sm text-amber-100/70">{statusText}</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </>
     )
@@ -538,6 +558,34 @@ const BaristaSimulator = () => {
         ref={containerRef}
         className="h-[540px] w-full overflow-hidden rounded-3xl border border-amber-900/20 bg-[#f7f1e3] shadow-2xl"
       />
+
+      {isDialogueActive && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+          <div className="relative h-56 w-56 animate-[pulse_4s_ease-in-out_infinite]">
+            <div className="absolute inset-0 rounded-full border-4 border-amber-400/60 bg-linear-to-br from-amber-50/95 via-amber-100/90 to-amber-200/90 shadow-[0_30px_60px_rgba(58,36,21,0.35)] backdrop-blur-sm" />
+            <div className="absolute inset-[18%] rounded-full bg-amber-50/90 shadow-inner" />
+            <div className="absolute left-1/2 top-[38%] flex w-24 -translate-x-1/2 justify-between">
+              <span className="h-6 w-6 rounded-full bg-amber-900/85 shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
+              <span className="h-6 w-6 rounded-full bg-amber-900/85 shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
+            </div>
+            <div className="absolute left-1/2 top-[60%] h-12 w-24 -translate-x-1/2 rounded-b-full border-b-8 border-amber-900/80" />
+          </div>
+        </div>
+      )}
+
+      {dialogue.step !== "idle" && isSpeaking && (
+        <div
+          className="pointer-events-none absolute z-30 animate-pulse"
+          style={{ left: "33%", top: "12%" }}
+        >
+          <div className="relative">
+            <div className="rounded-3xl border border-amber-900/10 bg-amber-50/95 px-4 py-2 text-sm font-semibold text-amber-900 shadow-xl">
+              Brewing a response...
+            </div>
+            <div className="absolute left-8 top-full h-4 w-4 -translate-x-1/2 rotate-45 border border-amber-900/10 bg-amber-50/95 shadow-lg" />
+          </div>
+        </div>
+      )}
 
       {promptVisible && !isDialogueActive && (
         <div className="pointer-events-none absolute inset-x-0 top-6 flex justify-center">
@@ -556,15 +604,30 @@ const BaristaSimulator = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-amber-300/70">
                   <span className="inline-block h-px w-6 bg-amber-300/30"></span>
-                  Order Complete
+                  Voice Order Complete
                 </div>
                 <h3 className="mt-3 font-serif text-2xl font-medium text-amber-50">
-                  {dialogue.selections.name}&apos;s Order
+                  Voice Session Wrapped
                 </h3>
                 <p className="mt-2 text-lg leading-relaxed text-amber-100/90">
-                  {dialogue.selections.size} {dialogue.selections.drink}
+                  All drink details were captured through your voice responses. Nicely done!
                 </p>
-                <p className="mt-1 text-sm text-amber-200/60">with {dialogue.selections.milk} milk</p>
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {ORDER_SEQUENCE.map((step) => (
+                    <div
+                      key={step.key}
+                      className="flex items-center gap-3 rounded-2xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100 shadow-inner"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-base font-bold text-emerald-950">
+                        ✓
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{step.title}</span>
+                        <span className="text-xs text-emerald-100/70">Confirmed via voice</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-center">
@@ -596,32 +659,7 @@ const BaristaSimulator = () => {
         >
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
           <div className="relative px-6 pb-6 pt-8">
-            {dialogue.step === "name" ? (
-              <form className="space-y-5" onSubmit={handleNameSubmit} autoComplete="off">
-                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-amber-200/70">
-                  <span className="inline-block h-px w-6 bg-amber-200/30"></span>
-                  Final step
-                </div>
-                <h3 className="font-serif text-2xl font-medium leading-relaxed text-amber-50">Name for the order?</h3>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <input
-                    value={nameInput}
-                    onChange={(event) => setNameInput(event.target.value)}
-                    className="flex-1 rounded-2xl border border-amber-200/30 bg-amber-950/40 px-5 py-4 text-base text-amber-50 shadow-inner outline-none backdrop-blur-sm placeholder:text-amber-200/40 focus:border-amber-300/60 focus:bg-amber-950/50 focus:ring-2 focus:ring-amber-400/30"
-                    placeholder="Enter your name..."
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-2xl bg-linear-to-br from-amber-400 to-amber-600 px-8 py-4 text-base font-bold uppercase tracking-wide text-amber-950 shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-300/70"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </form>
-            ) : (
-              renderOptions()
-            )}
+            {renderVoiceGuidance()}
           </div>
         </div>
       )}
