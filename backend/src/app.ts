@@ -1,10 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import baristaRoutes from './routes/baristaRoutes';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from backend root directory
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -68,4 +69,5 @@ app.listen(port, () => {
   console.log('- GET  /health');
   console.log('- POST /api/conversation');
   console.log('- GET  /api/reset');
+  console.log('- POST /api/analyze');
 });

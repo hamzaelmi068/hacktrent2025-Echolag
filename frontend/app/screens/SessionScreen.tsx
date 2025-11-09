@@ -10,11 +10,17 @@ import ToastPlaceholder from "../components/ToastPlaceholder";
 import Toolbar from "../components/Toolbar";
 import TranscriptPanel from "../components/TranscriptPanel";
 import { ROUTES } from "../lib/routes";
+import { BARISTA_PLACEHOLDER } from "../lib/placeholders";
 import { useConversation } from "../context/ConversationContext";
 
 const SessionScreen = () => {
   const router = useRouter();
-  const { messages, orderState, sendMessage, isLoading } = useConversation();
+  const {
+    messages,
+    orderState,
+    sendMessage,
+    isLoading,
+  } = useConversation();
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -22,6 +28,7 @@ const SessionScreen = () => {
   const [recognitionSupported, setRecognitionSupported] = useState(true);
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -228,6 +235,7 @@ const SessionScreen = () => {
       setTranscript("");
       setStatusMessage("Listening... Speak clearly into your microphone.");
       setIsListening(true);
+      setSessionStartTime(Date.now()); // Track session start time
     } catch (error) {
       console.error("Speech recognition start error", error);
       setStatusMessage("Unable to start speech recognition.");
@@ -240,9 +248,38 @@ const SessionScreen = () => {
     };
   }, [stopListening]);
 
+
   const handleFinish = () => {
     stopListening();
-    router.push(ROUTES.FEEDBACK);
+    
+    // Calculate session duration
+    const duration = sessionStartTime 
+      ? (Date.now() - sessionStartTime) / 1000 
+      : 0;
+    
+    // Save session data to localStorage for feedback page
+    const sessionData = {
+      transcript: transcript.trim(),
+      duration: duration,
+      audioUrl: audioUrl || null,
+    };
+    
+    localStorage.setItem('sessionTranscript', sessionData.transcript);
+    localStorage.setItem('sessionDuration', sessionData.duration.toString());
+    if (sessionData.audioUrl) {
+      localStorage.setItem('sessionAudioUrl', sessionData.audioUrl);
+    }
+    
+    // Navigate to feedback with data in URL params
+    const params = new URLSearchParams({
+      transcript: sessionData.transcript,
+      duration: sessionData.duration.toString(),
+    });
+    if (sessionData.audioUrl) {
+      params.set('audioUrl', sessionData.audioUrl);
+    }
+    
+    router.push(`${ROUTES.FEEDBACK}?${params.toString()}`);
   };
 
   const micStatusLabel = useMemo(() => {
@@ -277,7 +314,7 @@ const SessionScreen = () => {
   }, [messages]);
 
   const isOrderComplete = useMemo(() => {
-    return orderState?.completed ?? false;
+    return orderState.drink && orderState.size && orderState.milk && orderState.name;
   }, [orderState]);
 
   useEffect(() => {
@@ -321,7 +358,9 @@ const SessionScreen = () => {
               </div>
               <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Barista</h2>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{latestMessage}</p>
+            <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{BARISTA_PLACEHOLDER}</p>
+            <h2 className="text-lg font-semibold text-slate-900">Barista</h2>
+            <p className="text-sm text-slate-600">{latestMessage}</p>
           </div>
         </Card>
 
@@ -400,9 +439,7 @@ const SessionScreen = () => {
             Order Checklist
           </h2>
           <ProgressChips
-            currentStep={orderState?.currentStep ?? 0}
-            orderItems={orderState?.orderItems ?? []}
-            completed={orderState?.completed ?? false}
+            orderState={orderState}
           />
         </section>
 
