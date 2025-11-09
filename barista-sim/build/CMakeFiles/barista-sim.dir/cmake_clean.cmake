@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/barista-sim.dir/src/App.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/App.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Audio.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Audio.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Barista.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Barista.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/CafeScene.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/CafeScene.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Customer.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Customer.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/DialogueUI.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/DialogueUI.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Entity.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Entity.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/HUD.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/HUD.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Input.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Input.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/NPC.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/NPC.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Order.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Order.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Pathfinding.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Pathfinding.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Player.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Player.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/ReportScene.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/ReportScene.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Resources.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Resources.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/Scene.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/Scene.cpp.o.d"
+  "CMakeFiles/barista-sim.dir/src/main.cpp.o"
+  "CMakeFiles/barista-sim.dir/src/main.cpp.o.d"
+  "barista-sim"
+  "barista-sim.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/barista-sim.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

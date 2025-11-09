@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/Applications/vscode/hacktrent25/barista-sim/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

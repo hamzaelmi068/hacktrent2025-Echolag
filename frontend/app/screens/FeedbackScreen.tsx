@@ -65,7 +65,6 @@ const FeedbackScreen = () => {
           {
             duration: calculatedMetrics.totalDuration,
             wordCount: calculatedMetrics.wordCount,
-            averagePause: calculatedMetrics.averagePauseDuration,
             wordsPerMinute: calculatedMetrics.wordsPerMinute,
           }
         );
@@ -85,7 +84,7 @@ const FeedbackScreen = () => {
   // Calculate overall score
   const overallScore = useMemo(() => {
     if (!analysis) return 0;
-    return Math.round(
+    return analysis.averageScore ?? Math.round(
       (analysis.clarityScore + analysis.pronunciationScore + analysis.fluencyScore) / 3
     );
   }, [analysis]);
@@ -445,7 +444,7 @@ const FeedbackScreen = () => {
           className="flex flex-col sm:flex-row gap-4 justify-center mt-12"
         >
           <button
-            onClick={() => router.push(ROUTES.SESSION)}
+            onClick={() => router.push(ROUTES.CUSTOMER)}
             className="px-8 py-4 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105 cursor-pointer"
             style={{ backgroundColor: '#8B9D83' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7A8A6F'}

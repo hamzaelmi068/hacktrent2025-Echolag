@@ -10,7 +10,7 @@ export const TIPS_PLACEHOLDERS = [
   "Mirror the guest’s order back to confirm accuracy.",
 ] as const;
 
-export const ELEVENLABS_PRIMARY_VOICE_ID = "ZauUyVXAz5znrgRuElJ5";
+export const ELEVENLABS_PRIMARY_VOICE_ID = "zZLmKvCp1i04X8E0FJ8B";
 
 export const ELEVENLABS_VOICE_PLACEHOLDERS = [
   {

@@ -1,0 +1,104 @@
+[
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/App.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/App.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/App.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/App.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Audio.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Audio.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Audio.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Audio.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Barista.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Barista.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Barista.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Barista.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/CafeScene.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/CafeScene.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/CafeScene.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/CafeScene.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Customer.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Customer.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Customer.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Customer.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/DialogueUI.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/DialogueUI.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/DialogueUI.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/DialogueUI.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Entity.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Entity.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Entity.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Entity.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/HUD.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/HUD.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/HUD.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/HUD.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Input.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Input.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Input.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Input.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/NPC.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/NPC.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/NPC.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/NPC.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Order.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Order.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Order.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Order.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Pathfinding.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Pathfinding.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Pathfinding.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Pathfinding.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Player.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Player.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Player.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Player.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/ReportScene.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/ReportScene.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/ReportScene.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/ReportScene.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Resources.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Resources.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Resources.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Resources.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/Scene.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/Scene.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/Scene.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/Scene.cpp.o"
+},
+{
+  "directory": "/Applications/vscode/hacktrent25/barista-sim/build",
+  "command": "/usr/bin/c++  -I/Applications/vscode/hacktrent25/barista-sim/src -isystem /opt/homebrew/include -std=c++20 -Wall -Wextra -Wpedantic -o CMakeFiles/barista-sim.dir/src/main.cpp.o -c /Applications/vscode/hacktrent25/barista-sim/src/main.cpp",
+  "file": "/Applications/vscode/hacktrent25/barista-sim/src/main.cpp",
+  "output": "CMakeFiles/barista-sim.dir/src/main.cpp.o"
+}
+]

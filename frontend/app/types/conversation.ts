@@ -3,6 +3,9 @@ export interface OrderState {
   size: boolean;
   milk: boolean;
   name: boolean;
+  currentStep?: number;
+  orderItems?: string[];
+  completed?: boolean;
 }
 
 export interface Message {

@@ -32,6 +32,7 @@ const SessionScreen = () => {
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [hasUserSpoken, setHasUserSpoken] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -49,9 +50,8 @@ const SessionScreen = () => {
 
     const hasMedia = Boolean(navigator.mediaDevices?.getUserMedia);
     const SpeechRecognitionConstructor =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
-
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     setMediaSupported(hasMedia);
     setRecognitionSupported(Boolean(SpeechRecognitionConstructor));
@@ -172,7 +172,12 @@ const SessionScreen = () => {
         for (let i = 0; i < event.results.length; i += 1) {
           combined += event.results[i][0].transcript;
         }
-        setTranscript(combined.trim());
+        const trimmedTranscript = combined.trim();
+        if (trimmedTranscript.length > 0) {
+          setHasUserSpoken(true);
+          setSessionStartTime((previous) => previous ?? Date.now());
+        }
+        setTranscript(trimmedTranscript);
       };
 
       recognition.onerror = (event: any) => {
@@ -237,14 +242,14 @@ const SessionScreen = () => {
 
     try {
       setTranscript("");
+      setSessionStartTime(null);
       setStatusMessage("Listening... Speak clearly into your microphone.");
       setIsListening(true);
-      setSessionStartTime(Date.now()); // Track session start time
     } catch (error) {
       console.error("Speech recognition start error", error);
       setStatusMessage("Unable to start speech recognition.");
     }
-  }, [audioUrl, isListening, mediaSupported, stopListening]);
+  }, [audioUrl, hasUserSpoken, isListening, mediaSupported, stopListening]);
 
   useEffect(() => {
     return () => {
@@ -272,36 +277,86 @@ const SessionScreen = () => {
   }, [assistantAudioUrl]);
 
   const handleFinish = () => {
+    console.log("🔴 handleFinish called");
+
     stopListening();
-    
-    // Calculate session duration
-    const duration = sessionStartTime 
-      ? (Date.now() - sessionStartTime) / 1000 
-      : 0;
-    
-    // Save session data to localStorage for feedback page
-    const sessionData = {
-      transcript: transcript.trim(),
-      duration: duration,
-      audioUrl: audioUrl || null,
-    };
-    
-    localStorage.setItem('sessionTranscript', sessionData.transcript);
-    localStorage.setItem('sessionDuration', sessionData.duration.toString());
-    if (sessionData.audioUrl) {
-      localStorage.setItem('sessionAudioUrl', sessionData.audioUrl);
-    }
-    
-    // Navigate to feedback with data in URL params
-    const params = new URLSearchParams({
-      transcript: sessionData.transcript,
-      duration: sessionData.duration.toString(),
+
+    const endTimestamp = Date.now();
+    const startTimestamp = sessionStartTime ?? endTimestamp;
+    const durationSeconds = Math.max(0, (endTimestamp - startTimestamp) / 1000);
+    const trimmedTranscript = transcript.trim();
+    const words =
+      trimmedTranscript.length > 0
+        ? trimmedTranscript.split(/\s+/).filter(Boolean)
+        : [];
+    const wordCount = words.length;
+    const wordsPerMinute =
+      durationSeconds > 0 ? Math.round((wordCount / durationSeconds) * 60) : 0;
+
+    console.log("📊 Session Data:", {
+      transcript: trimmedTranscript,
+      wordCount,
+      duration: durationSeconds,
+      wordsPerMinute,
+      hasUserSpoken,
+      canFinish,
     });
-    if (sessionData.audioUrl) {
-      params.set('audioUrl', sessionData.audioUrl);
+
+    const sessionData = {
+      transcript: trimmedTranscript,
+      messages: messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+      wordCount,
+      duration: parseFloat(durationSeconds.toFixed(1)),
+      wordsPerMinute,
+      startTime: new Date(startTimestamp).toISOString(),
+      endTime: new Date(endTimestamp).toISOString(),
+      audioUrl: audioUrl || null,
+      scenarioType: "barista-practice",
+    };
+
+    try {
+      localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
+      console.log("✅ Session data saved to localStorage");
+    } catch (error) {
+      console.error("❌ Unable to save session data", error);
     }
-    
-    router.push(`${ROUTES.FEEDBACK}?${params.toString()}`);
+
+    try {
+      localStorage.setItem("sessionTranscript", sessionData.transcript);
+      localStorage.setItem(
+        "sessionDuration",
+        sessionData.duration.toString()
+      );
+      if (sessionData.audioUrl) {
+        localStorage.setItem("sessionAudioUrl", sessionData.audioUrl);
+      } else {
+        localStorage.removeItem("sessionAudioUrl");
+      }
+    } catch (error) {
+      console.warn("⚠️ Unable to persist legacy session keys", error);
+    }
+
+    const navigateToFeedback = () => {
+      try {
+        console.log("🔄 Navigating to /feedback with router.push");
+        router.push(ROUTES.FEEDBACK);
+      } catch (navigationError) {
+        console.error("⚠️ router.push failed, falling back to window.location", navigationError);
+        if (typeof window !== "undefined") {
+          window.location.assign(ROUTES.FEEDBACK);
+        }
+      }
+    };
+
+    // Allow state/localStorage updates to flush before navigating
+    if (typeof window !== "undefined") {
+      window.setTimeout(navigateToFeedback, 50);
+    } else {
+      navigateToFeedback();
+    }
   };
 
   const micStatusLabel = useMemo(() => {
@@ -319,6 +374,8 @@ const SessionScreen = () => {
     stopListening();
     if (snapshot) {
       setSavedTranscript(snapshot);
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
       setStatusMessage("Processing your response...");
       await sendMessage(snapshot);
       setStatusMessage("Response processed. Continue when ready.");
@@ -335,9 +392,41 @@ const SessionScreen = () => {
     );
   }, [messages]);
 
+  useEffect(() => {
+    const trimmed = transcript.trim();
+    if (trimmed.length > 0) {
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
+    }
+  }, [transcript]);
+
   const isOrderComplete = useMemo(() => {
-    return orderState.drink && orderState.size && orderState.milk && orderState.name;
+    return (
+      Boolean(orderState?.drink) &&
+      Boolean(orderState?.size) &&
+      Boolean(orderState?.milk) &&
+      Boolean(orderState?.name)
+    );
   }, [orderState]);
+
+  useEffect(() => {
+    const hasUserMessage = messages.some(
+      (msg) => msg.role === "user" && msg.content.trim().length > 0
+    );
+    if (hasUserMessage) {
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
+    }
+  }, [messages]);
+
+  const canFinish = hasUserSpoken || isOrderComplete;
+
+  useEffect(() => {
+    console.log("🧠 canFinish evaluation:", {
+      hasUserSpoken,
+      canFinish,
+    });
+  }, [canFinish, hasUserSpoken]);
 
   useEffect(() => {
     return () => {
@@ -348,7 +437,10 @@ const SessionScreen = () => {
   }, [audioUrl]);
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ backgroundColor: '#F5F1E8' }}>
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ backgroundColor: "#F5F1E8" }}
+    >
       <Masthead
         title="Session Practice"
         subtitle="Run through a sample order and track your responses."
@@ -360,10 +452,16 @@ const SessionScreen = () => {
               stopListening();
               router.push(ROUTES.HOME);
             }}
-            className="text-sm font-medium text-white rounded-full px-6 py-2 transition-all duration-300 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+            className="text-sm font-medium text-white rounded-lg px-6 py-2 transition-all duration-300 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer hover:scale-110"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.3)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.2)")
+            }
           >
             Back to Home
           </a>
@@ -375,12 +473,22 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">☕</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Barista</h2>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
+                Barista
+              </h2>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{latestMessage}</p>
+            <p className="text-sm leading-relaxed" style={{ color: "#6B5D52" }}>
+              {latestMessage}
+            </p>
             <div className="space-y-2">
               {speechError ? (
                 <p className="text-xs text-red-600">
@@ -411,10 +519,18 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">📝</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Your Transcript</h2>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
+                Your Transcript
+              </h2>
             </div>
             <TranscriptPanel
               title=""
@@ -453,10 +569,16 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">🎤</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
                 Recording Playback
               </h2>
             </div>
@@ -470,20 +592,29 @@ const SessionScreen = () => {
             ) : (
               <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
                 <div className="text-6xl mb-4">🎤</div>
-                <h3 className="text-xl font-semibold" style={{ color: '#4A3F35' }}>Ready to practice?</h3>
-                <p className="text-center" style={{ color: '#6B5D52' }}>Hit Start to begin!</p>
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: "#4A3F35" }}
+                >
+                  Ready to practice?
+                </h3>
+                <p className="text-center" style={{ color: "#6B5D52" }}>
+                  Hit Start to begin!
+                </p>
               </div>
             )}
           </div>
         </Card>
         {/* Order Checklist */}
         <section aria-labelledby="progress-heading" className="space-y-4">
-          <h2 id="progress-heading" className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+          <h2
+            id="progress-heading"
+            className="text-lg font-semibold"
+            style={{ color: "#4A3F35" }}
+          >
             Order Checklist
           </h2>
-          <ProgressChips
-            orderState={orderState}
-          />
+          <ProgressChips orderState={orderState} />
         </section>
 
         {/* Toolbar */}
@@ -492,9 +623,15 @@ const SessionScreen = () => {
             onClick={startListening}
             disabled={isListening}
             className="inline-flex items-center gap-2 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-md transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
-            style={{ backgroundColor: '#8B9D83' }}
-            onMouseEnter={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#7A8A6F')}
-            onMouseLeave={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#8B9D83')}
+            style={{ backgroundColor: "#8B9D83" }}
+            onMouseEnter={(e) =>
+              !isListening &&
+              (e.currentTarget.style.backgroundColor = "#7A8A6F")
+            }
+            onMouseLeave={(e) =>
+              !isListening &&
+              (e.currentTarget.style.backgroundColor = "#8B9D83")
+            }
           >
             <span>🎤</span>
             {isListening ? "Listening..." : "Start"}
@@ -504,20 +641,20 @@ const SessionScreen = () => {
             onClick={handleStopAndSave}
             disabled={(!isListening && !transcript.trim()) || isLoading}
             className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ 
-              borderColor: '#8B7355',
-              color: '#4A3F35',
-              backgroundColor: 'transparent'
+            style={{
+              borderColor: "#8B7355",
+              color: "#4A3F35",
+              backgroundColor: "transparent",
             }}
             onMouseEnter={(e) => {
               if (!isLoading && (isListening || transcript.trim())) {
-                e.currentTarget.style.backgroundColor = '#C4D0BC';
-                e.currentTarget.style.borderColor = '#8B9D83';
+                e.currentTarget.style.backgroundColor = "#C4D0BC";
+                e.currentTarget.style.borderColor = "#8B9D83";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#8B7355';
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.borderColor = "#8B7355";
             }}
           >
             {isLoading ? "Processing..." : "Stop & Send"}
@@ -525,43 +662,49 @@ const SessionScreen = () => {
 
           <button
             onClick={handleFinish}
-            disabled={!isOrderComplete}
+            disabled={!canFinish}
             className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ 
-              borderColor: '#8B7355',
-              color: '#4A3F35',
-              backgroundColor: 'transparent'
+            style={{
+              borderColor: "#8B7355",
+              color: "#4A3F35",
+              backgroundColor: "transparent",
             }}
             onMouseEnter={(e) => {
-              if (isOrderComplete) {
-                e.currentTarget.style.backgroundColor = '#C4D0BC';
-                e.currentTarget.style.borderColor = '#8B9D83';
+              if (canFinish) {
+                e.currentTarget.style.backgroundColor = "#C4D0BC";
+                e.currentTarget.style.borderColor = "#8B9D83";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#8B7355';
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.borderColor = "#8B7355";
             }}
           >
-            Finish
+            Finish Scenario
           </button>
 
           <span
             className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
-            style={isListening ? {
-              backgroundColor: '#F5E6E6',
-              color: '#8B5A5A'
-            } : {
-              backgroundColor: '#C4D0BC',
-              color: '#4A3F35'
-            }}
+            style={
+              isListening
+                ? {
+                    backgroundColor: "#F5E6E6",
+                    color: "#8B5A5A",
+                  }
+                : {
+                    backgroundColor: "#C4D0BC",
+                    color: "#4A3F35",
+                  }
+            }
           >
             <span
               aria-hidden="true"
               className="h-2 w-2 rounded-full"
               style={{
-                backgroundColor: isListening ? '#D4A574' : '#8B9D83',
-                animation: isListening ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+                backgroundColor: isListening ? "#D4A574" : "#8B9D83",
+                animation: isListening
+                  ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+                  : "none",
               }}
             />
             {micStatusLabel}
