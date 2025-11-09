@@ -419,7 +419,7 @@ const FeedbackPage = () => {
           className="flex flex-col gap-4 sm:flex-row sm:justify-center"
         >
           <button
-            onClick={() => router.push(ROUTES.SESSION)}
+            onClick={() => router.push(ROUTES.CUSTOMER)}
             className="w-full rounded-full px-10 py-4 text-base font-semibold sm:w-auto"
             style={{
               backgroundColor: ACCENT_GREEN,
