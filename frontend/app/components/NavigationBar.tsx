@@ -70,8 +70,8 @@ const NavigationBar = () => {
                   >
                     <span className="text-2xl">☕</span>
                     <div>
-                      <p className="font-medium" style={{ color: '#3c372d' }}>Barista Practice</p>
-                      <p className="text-xs" style={{ color: '#9ca3af' }}>Guided coffee order flow</p>
+                      <p className="font-medium" style={{ color: '#3c372d' }}>General Scenario</p>
+                      <p className="text-xs" style={{ color: '#9ca3af' }}>Choose your own scenario for practice!</p>
                     </div>
                   </Link>
                   
@@ -86,8 +86,8 @@ const NavigationBar = () => {
                   >
                     <span className="text-2xl">⚡</span>
                     <div>
-                      <p className="font-medium" style={{ color: '#3c372d' }}>Customer Rush</p>
-                      <p className="text-xs" style={{ color: '#9ca3af' }}>High-pressure practice</p>
+                      <p className="font-medium" style={{ color: '#3c372d' }}>Barista Practice</p>
+                      <p className="text-xs" style={{ color: '#9ca3af' }}>Guided coffee order flow</p>
                     </div>
                   </Link>
                   
