@@ -3,6 +3,7 @@ export const ROUTES = {
   SESSION: "/session",
   FEEDBACK: "/feedback",
   CUSTOMER: "/customer",
+  FILLER_WORDS: "/filler-words",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;

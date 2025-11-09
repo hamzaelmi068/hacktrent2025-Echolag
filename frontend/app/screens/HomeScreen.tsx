@@ -102,7 +102,7 @@ const HomeScreen = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 flex-wrap"
           >
             <button
               onClick={() => router.push(ROUTES.CUSTOMER)}
@@ -120,6 +120,17 @@ const HomeScreen = () => {
                 aria-hidden="true"
               />
               <span>Try Ordering Coffee</span>
+            </button>
+
+            <button
+              onClick={() => router.push(ROUTES.FILLER_WORDS)}
+              className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold rounded-lg text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
+              style={{ backgroundColor: '#5b8cff' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4a74d1'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#5b8cff'}
+            >
+              <span>🎤</span>
+              <span>Crush Filler Words</span>
             </button>
             
             <button
