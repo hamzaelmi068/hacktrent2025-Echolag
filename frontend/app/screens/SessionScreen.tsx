@@ -49,9 +49,8 @@ const SessionScreen = () => {
 
     const hasMedia = Boolean(navigator.mediaDevices?.getUserMedia);
     const SpeechRecognitionConstructor =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
-
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     setMediaSupported(hasMedia);
     setRecognitionSupported(Boolean(SpeechRecognitionConstructor));
@@ -273,34 +272,34 @@ const SessionScreen = () => {
 
   const handleFinish = () => {
     stopListening();
-    
+
     // Calculate session duration
-    const duration = sessionStartTime 
-      ? (Date.now() - sessionStartTime) / 1000 
+    const duration = sessionStartTime
+      ? (Date.now() - sessionStartTime) / 1000
       : 0;
-    
+
     // Save session data to localStorage for feedback page
     const sessionData = {
       transcript: transcript.trim(),
       duration: duration,
       audioUrl: audioUrl || null,
     };
-    
-    localStorage.setItem('sessionTranscript', sessionData.transcript);
-    localStorage.setItem('sessionDuration', sessionData.duration.toString());
+
+    localStorage.setItem("sessionTranscript", sessionData.transcript);
+    localStorage.setItem("sessionDuration", sessionData.duration.toString());
     if (sessionData.audioUrl) {
-      localStorage.setItem('sessionAudioUrl', sessionData.audioUrl);
+      localStorage.setItem("sessionAudioUrl", sessionData.audioUrl);
     }
-    
+
     // Navigate to feedback with data in URL params
     const params = new URLSearchParams({
       transcript: sessionData.transcript,
       duration: sessionData.duration.toString(),
     });
     if (sessionData.audioUrl) {
-      params.set('audioUrl', sessionData.audioUrl);
+      params.set("audioUrl", sessionData.audioUrl);
     }
-    
+
     router.push(`${ROUTES.FEEDBACK}?${params.toString()}`);
   };
 
@@ -336,7 +335,9 @@ const SessionScreen = () => {
   }, [messages]);
 
   const isOrderComplete = useMemo(() => {
-    return orderState.drink && orderState.size && orderState.milk && orderState.name;
+    return (
+      orderState.drink && orderState.size && orderState.milk && orderState.name
+    );
   }, [orderState]);
 
   // Allow finishing even with partial orders - users can review their practice session anytime
@@ -354,7 +355,10 @@ const SessionScreen = () => {
   }, [audioUrl]);
 
   return (
-    <div className="flex min-h-screen flex-col" style={{ backgroundColor: '#F5F1E8' }}>
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ backgroundColor: "#F5F1E8" }}
+    >
       <Masthead
         title="Session Practice"
         subtitle="Run through a sample order and track your responses."
@@ -366,10 +370,16 @@ const SessionScreen = () => {
               stopListening();
               router.push(ROUTES.HOME);
             }}
-            className="text-sm font-medium text-white rounded-full px-6 py-2 transition-all duration-300 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
-            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'}
+            className="text-sm font-medium text-white rounded-lg px-6 py-2 transition-all duration-300 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer hover:scale-110"
+            style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.3)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                "rgba(255, 255, 255, 0.2)")
+            }
           >
             Back to Home
           </a>
@@ -381,12 +391,22 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">☕</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Barista</h2>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
+                Barista
+              </h2>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: '#6B5D52' }}>{latestMessage}</p>
+            <p className="text-sm leading-relaxed" style={{ color: "#6B5D52" }}>
+              {latestMessage}
+            </p>
             <div className="space-y-2">
               {speechError ? (
                 <p className="text-xs text-red-600">
@@ -417,10 +437,18 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">📝</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>Your Transcript</h2>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
+                Your Transcript
+              </h2>
             </div>
             <TranscriptPanel
               title=""
@@ -459,10 +487,16 @@ const SessionScreen = () => {
         <Card>
           <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#8B9D83' }}>
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#8B9D83" }}
+              >
                 <span className="text-white text-xl">🎤</span>
               </div>
-              <h2 className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+              <h2
+                className="text-lg font-semibold"
+                style={{ color: "#4A3F35" }}
+              >
                 Recording Playback
               </h2>
             </div>
@@ -476,20 +510,29 @@ const SessionScreen = () => {
             ) : (
               <div className="flex flex-col items-center justify-center min-h-[300px] space-y-4">
                 <div className="text-6xl mb-4">🎤</div>
-                <h3 className="text-xl font-semibold" style={{ color: '#4A3F35' }}>Ready to practice?</h3>
-                <p className="text-center" style={{ color: '#6B5D52' }}>Hit Start to begin!</p>
+                <h3
+                  className="text-xl font-semibold"
+                  style={{ color: "#4A3F35" }}
+                >
+                  Ready to practice?
+                </h3>
+                <p className="text-center" style={{ color: "#6B5D52" }}>
+                  Hit Start to begin!
+                </p>
               </div>
             )}
           </div>
         </Card>
         {/* Order Checklist */}
         <section aria-labelledby="progress-heading" className="space-y-4">
-          <h2 id="progress-heading" className="text-lg font-semibold" style={{ color: '#4A3F35' }}>
+          <h2
+            id="progress-heading"
+            className="text-lg font-semibold"
+            style={{ color: "#4A3F35" }}
+          >
             Order Checklist
           </h2>
-          <ProgressChips
-            orderState={orderState}
-          />
+          <ProgressChips orderState={orderState} />
         </section>
 
         {/* Toolbar */}
@@ -498,9 +541,15 @@ const SessionScreen = () => {
             onClick={startListening}
             disabled={isListening}
             className="inline-flex items-center gap-2 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:shadow-md transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 cursor-pointer"
-            style={{ backgroundColor: '#8B9D83' }}
-            onMouseEnter={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#7A8A6F')}
-            onMouseLeave={(e) => !isListening && (e.currentTarget.style.backgroundColor = '#8B9D83')}
+            style={{ backgroundColor: "#8B9D83" }}
+            onMouseEnter={(e) =>
+              !isListening &&
+              (e.currentTarget.style.backgroundColor = "#7A8A6F")
+            }
+            onMouseLeave={(e) =>
+              !isListening &&
+              (e.currentTarget.style.backgroundColor = "#8B9D83")
+            }
           >
             <span>🎤</span>
             {isListening ? "Listening..." : "Start"}
@@ -510,20 +559,20 @@ const SessionScreen = () => {
             onClick={handleStopAndSave}
             disabled={(!isListening && !transcript.trim()) || isLoading}
             className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ 
-              borderColor: '#8B7355',
-              color: '#4A3F35',
-              backgroundColor: 'transparent'
+            style={{
+              borderColor: "#8B7355",
+              color: "#4A3F35",
+              backgroundColor: "transparent",
             }}
             onMouseEnter={(e) => {
               if (!isLoading && (isListening || transcript.trim())) {
-                e.currentTarget.style.backgroundColor = '#C4D0BC';
-                e.currentTarget.style.borderColor = '#8B9D83';
+                e.currentTarget.style.backgroundColor = "#C4D0BC";
+                e.currentTarget.style.borderColor = "#8B9D83";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#8B7355';
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.borderColor = "#8B7355";
             }}
           >
             {isLoading ? "Processing..." : "Stop & Send"}
@@ -533,20 +582,20 @@ const SessionScreen = () => {
             onClick={handleFinish}
             disabled={!canFinish}
             className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ 
-              borderColor: '#8B7355',
-              color: '#4A3F35',
-              backgroundColor: 'transparent'
+            style={{
+              borderColor: "#8B7355",
+              color: "#4A3F35",
+              backgroundColor: "transparent",
             }}
             onMouseEnter={(e) => {
               if (canFinish) {
-                e.currentTarget.style.backgroundColor = '#C4D0BC';
-                e.currentTarget.style.borderColor = '#8B9D83';
+                e.currentTarget.style.backgroundColor = "#C4D0BC";
+                e.currentTarget.style.borderColor = "#8B9D83";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-              e.currentTarget.style.borderColor = '#8B7355';
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.borderColor = "#8B7355";
             }}
           >
             Finish
@@ -554,20 +603,26 @@ const SessionScreen = () => {
 
           <span
             className="ml-auto inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
-            style={isListening ? {
-              backgroundColor: '#F5E6E6',
-              color: '#8B5A5A'
-            } : {
-              backgroundColor: '#C4D0BC',
-              color: '#4A3F35'
-            }}
+            style={
+              isListening
+                ? {
+                    backgroundColor: "#F5E6E6",
+                    color: "#8B5A5A",
+                  }
+                : {
+                    backgroundColor: "#C4D0BC",
+                    color: "#4A3F35",
+                  }
+            }
           >
             <span
               aria-hidden="true"
               className="h-2 w-2 rounded-full"
               style={{
-                backgroundColor: isListening ? '#D4A574' : '#8B9D83',
-                animation: isListening ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+                backgroundColor: isListening ? "#D4A574" : "#8B9D83",
+                animation: isListening
+                  ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+                  : "none",
               }}
             />
             {micStatusLabel}

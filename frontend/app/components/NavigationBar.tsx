@@ -108,7 +108,7 @@ const NavigationBar = () => {
             </Link>
 
             {/* Primary CTA Button */}
-            <Link href="/session">
+            <Link href="/customer">
               <button 
                 className="px-6 py-2.5 text-white rounded-xl font-semibold hover:scale-105 hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer"
                 style={{ 
