@@ -505,7 +505,7 @@ const CustomerSessionScreen = () => {
                   <button
                     onClick={handleStopAndSave}
                     disabled={(!isListening && !transcript.trim()) || isLoading}
-                    className="px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium rounded-lg border-2 transition-all duration-300 active:scale-95 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{
                       borderColor: "#6AA97C",
                       color: "#356B47",

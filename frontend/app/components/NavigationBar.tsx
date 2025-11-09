@@ -115,7 +115,14 @@ const NavigationBar = () => {
                   background: 'linear-gradient(to right, #80a66e, #6B7D5C)'
                 }}
               >
-                <span>☕</span>
+              <Image
+                src="/coffee-cup.png"
+                alt=""
+                width={24}
+                height={24}
+                className="w-6 h-6"
+                aria-hidden="true"
+              />
                 Try Free
               </button>
             </Link>
