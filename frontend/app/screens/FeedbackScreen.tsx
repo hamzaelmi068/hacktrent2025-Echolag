@@ -65,7 +65,6 @@ const FeedbackScreen = () => {
           {
             duration: calculatedMetrics.totalDuration,
             wordCount: calculatedMetrics.wordCount,
-            averagePause: calculatedMetrics.averagePauseDuration,
             wordsPerMinute: calculatedMetrics.wordsPerMinute,
           }
         );
@@ -85,7 +84,7 @@ const FeedbackScreen = () => {
   // Calculate overall score
   const overallScore = useMemo(() => {
     if (!analysis) return 0;
-    return Math.round(
+    return analysis.averageScore ?? Math.round(
       (analysis.clarityScore + analysis.pronunciationScore + analysis.fluencyScore) / 3
     );
   }, [analysis]);

@@ -32,6 +32,7 @@ const SessionScreen = () => {
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
+  const [hasUserSpoken, setHasUserSpoken] = useState(false);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -172,7 +173,12 @@ const SessionScreen = () => {
         for (let i = 0; i < event.results.length; i += 1) {
           combined += event.results[i][0].transcript;
         }
-        setTranscript(combined.trim());
+        const trimmedTranscript = combined.trim();
+        if (trimmedTranscript.length > 0) {
+          setHasUserSpoken(true);
+          setSessionStartTime((previous) => previous ?? Date.now());
+        }
+        setTranscript(trimmedTranscript);
       };
 
       recognition.onerror = (event: any) => {
@@ -237,14 +243,16 @@ const SessionScreen = () => {
 
     try {
       setTranscript("");
+      if (!hasUserSpoken) {
+        setSessionStartTime(null);
+      }
       setStatusMessage("Listening... Speak clearly into your microphone.");
       setIsListening(true);
-      setSessionStartTime(Date.now()); // Track session start time
     } catch (error) {
       console.error("Speech recognition start error", error);
       setStatusMessage("Unable to start speech recognition.");
     }
-  }, [audioUrl, isListening, mediaSupported, stopListening]);
+  }, [audioUrl, hasUserSpoken, isListening, mediaSupported, stopListening]);
 
   useEffect(() => {
     return () => {
@@ -272,36 +280,69 @@ const SessionScreen = () => {
   }, [assistantAudioUrl]);
 
   const handleFinish = () => {
+    console.log("🔴 handleFinish called");
+
     stopListening();
-    
-    // Calculate session duration
-    const duration = sessionStartTime 
-      ? (Date.now() - sessionStartTime) / 1000 
-      : 0;
-    
-    // Save session data to localStorage for feedback page
+
+    const endTimestamp = Date.now();
+    const startTimestamp = sessionStartTime ?? endTimestamp;
+    const durationSeconds = Math.max(0, (endTimestamp - startTimestamp) / 1000);
+    const trimmedTranscript = transcript.trim();
+    const words = trimmedTranscript.length > 0 ? trimmedTranscript.split(/\s+/).filter(Boolean) : [];
+    const wordCount = words.length;
+    const wordsPerMinute =
+      durationSeconds > 0 ? Math.round((wordCount / durationSeconds) * 60) : 0;
+
+    console.log("📊 Session Data:", {
+      transcript: trimmedTranscript,
+      wordCount,
+      duration: durationSeconds,
+      wordsPerMinute,
+      hasUserSpoken,
+      hasTranscriptContent,
+      hasUserMessage,
+      canFinish,
+    });
+
     const sessionData = {
-      transcript: transcript.trim(),
-      duration: duration,
+      transcript: trimmedTranscript,
+      messages: messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+      wordCount,
+      duration: parseFloat(durationSeconds.toFixed(1)),
+      wordsPerMinute,
+      startTime: new Date(startTimestamp).toISOString(),
+      endTime: new Date(endTimestamp).toISOString(),
       audioUrl: audioUrl || null,
     };
-    
-    localStorage.setItem('sessionTranscript', sessionData.transcript);
-    localStorage.setItem('sessionDuration', sessionData.duration.toString());
-    if (sessionData.audioUrl) {
-      localStorage.setItem('sessionAudioUrl', sessionData.audioUrl);
+
+    try {
+      localStorage.setItem("lastSessionData", JSON.stringify(sessionData));
+      console.log("✅ Session data saved to localStorage");
+    } catch (error) {
+      console.error("❌ Unable to save session data", error);
     }
-    
-    // Navigate to feedback with data in URL params
-    const params = new URLSearchParams({
-      transcript: sessionData.transcript,
-      duration: sessionData.duration.toString(),
-    });
-    if (sessionData.audioUrl) {
-      params.set('audioUrl', sessionData.audioUrl);
+
+    const navigateToFeedback = () => {
+      try {
+        console.log("🔄 Navigating to /feedback with router.push");
+        router.push("/feedback");
+      } catch (navigationError) {
+        console.error("⚠️ router.push failed, falling back to window.location", navigationError);
+        if (typeof window !== "undefined") {
+          window.location.assign("/feedback");
+        }
+      }
+    };
+
+    // Allow state/localStorage updates to flush before navigating
+    if (typeof window !== "undefined") {
+      window.setTimeout(navigateToFeedback, 50);
+    } else {
+      navigateToFeedback();
     }
-    
-    router.push(`${ROUTES.FEEDBACK}?${params.toString()}`);
   };
 
   const micStatusLabel = useMemo(() => {
@@ -319,6 +360,8 @@ const SessionScreen = () => {
     stopListening();
     if (snapshot) {
       setSavedTranscript(snapshot);
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
       setStatusMessage("Processing your response...");
       await sendMessage(snapshot);
       setStatusMessage("Response processed. Continue when ready.");
@@ -335,15 +378,63 @@ const SessionScreen = () => {
     );
   }, [messages]);
 
-  const isOrderComplete = useMemo(() => {
-    return orderState.drink && orderState.size && orderState.milk && orderState.name;
-  }, [orderState]);
+  useEffect(() => {
+    const trimmed = transcript.trim();
+    if (trimmed.length > 0) {
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
+    }
+  }, [transcript]);
 
-  // Allow finishing even with partial orders - users can review their practice session anytime
+  useEffect(() => {
+    const hasUserMessage = messages.some(
+      (msg) => msg.role === "user" && msg.content.trim().length > 0
+    );
+    if (hasUserMessage) {
+      setHasUserSpoken(true);
+      setSessionStartTime((previous) => previous ?? Date.now());
+    }
+  }, [messages]);
+
+  const hasUserMessage = useMemo(() => {
+    return messages.some(
+      (msg) => msg.role === "user" && msg.content.trim().length > 0
+    );
+  }, [messages]);
+
+  const hasTranscriptContent = useMemo(() => {
+    if (transcript.trim().length > 0) {
+      return true;
+    }
+    if (savedTranscript && savedTranscript.trim().length > 0) {
+      return true;
+    }
+    return Boolean(audioUrl);
+  }, [audioUrl, savedTranscript, transcript]);
+
   const canFinish = useMemo(() => {
-    // Allow finishing if there's any transcript content or if order is complete
-    return transcript.trim().length > 0 || isOrderComplete;
-  }, [transcript, isOrderComplete]);
+    return hasUserSpoken || hasTranscriptContent || hasUserMessage;
+  }, [hasTranscriptContent, hasUserMessage, hasUserSpoken]);
+
+  useEffect(() => {
+    console.log("🧠 canFinish evaluation:", {
+      hasUserSpoken,
+      hasTranscriptContent,
+      hasUserMessage,
+      transcriptLength: transcript.trim().length,
+      savedTranscriptLength: savedTranscript?.trim().length ?? 0,
+      audioUrlExists: Boolean(audioUrl),
+      canFinish,
+    });
+  }, [
+    audioUrl,
+    canFinish,
+    hasTranscriptContent,
+    hasUserMessage,
+    hasUserSpoken,
+    savedTranscript,
+    transcript,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -549,7 +640,7 @@ const SessionScreen = () => {
               e.currentTarget.style.borderColor = '#8B7355';
             }}
           >
-            Finish
+            Finish Scenario
           </button>
 
           <span
