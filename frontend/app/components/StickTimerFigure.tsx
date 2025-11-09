@@ -1,19 +1,51 @@
 "use client"
 
+import { useEffect, useState } from "react"
+
 interface StickFigureTimerProps {
   seconds: number
   isActive: boolean
 }
 
 export default function StickFigureTimer({ seconds, isActive }: StickFigureTimerProps) {
-  // Calculate arm swing based on time (creates subtle animation)
-  const armRotation = isActive ? Math.sin(Date.now() / 500) * 2 : 0
+  const [animationTime, setAnimationTime] = useState(0)
+
+  useEffect(() => {
+    if (!isActive) {
+      setAnimationTime(0)
+      return
+    }
+
+    let frameId: number
+    const loop = (time: number) => {
+      setAnimationTime(time)
+      frameId = requestAnimationFrame(loop)
+    }
+
+    frameId = requestAnimationFrame(loop)
+    return () => {
+      cancelAnimationFrame(frameId)
+    }
+  }, [isActive])
+
+  const easedTime = animationTime / 1000
+  const armRotation = isActive ? Math.sin(easedTime * 4.2) * 6 : 0
+  const boardSwing = isActive ? Math.sin(easedTime * 3.2) * 3 : 0
+  const boardBob = isActive ? Math.cos(easedTime * 2.6) * 2 : 0
+  const shadowScale = isActive ? 1 + Math.sin(easedTime * 3.2) * 0.04 : 1
 
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <svg viewBox="0 0 300 400" className="h-full w-full" style={{ maxHeight: "100%", maxWidth: "100%" }}>
         {/* Shadow */}
-        <ellipse cx="150" cy="380" rx="40" ry="8" fill="rgba(0, 0, 0, 0.15)" className="transition-all duration-300" />
+        <ellipse
+          cx="150"
+          cy="380"
+          rx={40 * shadowScale}
+          ry={8 * shadowScale}
+          fill="rgba(0, 0, 0, 0.15)"
+          className="transition-all duration-150"
+        />
 
         {/* Legs */}
         <line
@@ -54,7 +86,10 @@ export default function StickFigureTimer({ seconds, isActive }: StickFigureTimer
         />
 
         {/* Left Arm (holding timer up) */}
-        <g className="transition-all duration-300" style={{ transformOrigin: "150px 190px" }}>
+        <g
+          className="transition-all duration-300"
+          style={{ transformOrigin: "150px 190px", transform: `rotate(${armRotation}deg)` }}
+        >
           <line
             x1="150"
             y1="190"
@@ -63,7 +98,6 @@ export default function StickFigureTimer({ seconds, isActive }: StickFigureTimer
             stroke="#1F2937"
             strokeWidth="6"
             strokeLinecap="round"
-            style={{ transform: `rotate(${armRotation}deg)` }}
           />
           <line
             x1="120"
@@ -73,12 +107,14 @@ export default function StickFigureTimer({ seconds, isActive }: StickFigureTimer
             stroke="#1F2937"
             strokeWidth="6"
             strokeLinecap="round"
-            style={{ transform: `rotate(${armRotation}deg)` }}
           />
         </g>
 
         {/* Right Arm (holding timer up) */}
-        <g className="transition-all duration-300" style={{ transformOrigin: "150px 190px" }}>
+        <g
+          className="transition-all duration-300"
+          style={{ transformOrigin: "150px 190px", transform: `rotate(${-armRotation}deg)` }}
+        >
           <line
             x1="150"
             y1="190"
@@ -87,7 +123,6 @@ export default function StickFigureTimer({ seconds, isActive }: StickFigureTimer
             stroke="#1F2937"
             strokeWidth="6"
             strokeLinecap="round"
-            style={{ transform: `rotate(${-armRotation}deg)` }}
           />
           <line
             x1="180"
@@ -97,11 +132,16 @@ export default function StickFigureTimer({ seconds, isActive }: StickFigureTimer
             stroke="#1F2937"
             strokeWidth="6"
             strokeLinecap="round"
-            style={{ transform: `rotate(${-armRotation}deg)` }}
           />
         </g>
 
-        <g>
+        <g
+          style={{
+            transformOrigin: "150px 53px",
+            transform: `translateY(${boardBob}px) rotate(${boardSwing}deg)`,
+            transition: isActive ? "none" : "transform 200ms ease-out",
+          }}
+        >
           {/* Timer board shadow */}
           <rect x="72" y="12" width="156" height="86" rx="12" fill="rgba(0, 0, 0, 0.1)" />
 
