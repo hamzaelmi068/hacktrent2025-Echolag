@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 const NavigationBar = () => {
@@ -19,7 +20,13 @@ const NavigationBar = () => {
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{ backgroundColor: 'rgba(139, 157, 131, 0.2)' }}
             >
-              <span className="text-xl">🎤</span>
+              <Image
+                src="/favicon.ico"
+                alt="EchoLag Logo"
+                width={24}
+                height={24}
+                priority
+              />
             </div>
             <span className="text-xl font-bold" style={{ color: '#3c372d' }}>EchoLag</span>
           </Link>
