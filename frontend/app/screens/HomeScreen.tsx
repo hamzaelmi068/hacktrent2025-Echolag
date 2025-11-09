@@ -105,7 +105,7 @@ const HomeScreen = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <button
-              onClick={() => router.push(ROUTES.SESSION)}
+              onClick={() => router.push(ROUTES.CUSTOMER)}
               className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold rounded-lg text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-4 focus:ring-opacity-50 focus:outline-none cursor-pointer"
               style={{ backgroundColor: '#80a66e' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#6d8f5d'}

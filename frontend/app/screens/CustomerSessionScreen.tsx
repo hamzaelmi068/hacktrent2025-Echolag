@@ -42,7 +42,7 @@ const CustomerSessionScreen = () => {
   const [recognitionSupported, setRecognitionSupported] = useState(true);
   const [mediaSupported, setMediaSupported] = useState(true);
   const [savedTranscript, setSavedTranscript] = useState<string | null>(null);
-  const [showArchive, setShowArchive] = useState(false);
+  const [showArchive, setShowArchive] = useState(true);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
@@ -51,6 +51,7 @@ const CustomerSessionScreen = () => {
   const liveAudioRef = useRef<HTMLAudioElement | null>(null);
   const customerAudioRef = useRef<HTMLAudioElement | null>(null);
   const archiveContentRef = useRef<HTMLDivElement | null>(null);
+  const liveTranscriptRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -345,6 +346,16 @@ const CustomerSessionScreen = () => {
     ? transcript
     : "Start speaking and your words will appear here in real time.";
 
+  useEffect(() => {
+    if (!liveTranscriptRef.current) {
+      return;
+    }
+    const container = liveTranscriptRef.current;
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
+  }, [transcript]);
+
   return (
     <CafeBackground>
       <Masthead
@@ -389,6 +400,7 @@ const CustomerSessionScreen = () => {
                   Move with WASD, press E at the counter, and complete the drink order. Results appear once the pickup
                   name is confirmed.
                 </p>
+                
               </div>
               <BaristaSimulator />
             </div>
@@ -403,7 +415,7 @@ const CustomerSessionScreen = () => {
                       Watch your spoken words stream into text without leaving the simulator.
                     </p>
                   </div>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={handleTranscriptArchiveClick}
                     className="inline-flex items-center gap-2 self-end rounded-full border border-[#6AA97C] px-5 py-2 text-xs font-semibold uppercase tracking-widest text-[#356B47] transition-all duration-300 hover:bg-[#E3F2E7] focus:outline-none focus:ring-4 focus:ring-[#6AA97C]/40 sm:self-auto"
@@ -416,10 +428,13 @@ const CustomerSessionScreen = () => {
                     >
                       ▾
                     </span>
-                  </button>
+                  </button> */}
                 </div>
                 <div className="flex-1 overflow-hidden">
-                  <div className="max-h-64 min-h-[200px] overflow-y-auto rounded-2xl border border-white/60 bg-white/95 p-5 text-sm text-[#4A3F35] shadow-inner">
+                  <div
+                    ref={liveTranscriptRef}
+                    className="max-h-64 min-h-[200px] overflow-y-auto rounded-2xl border border-white/60 bg-white/95 p-5 text-sm text-[#4A3F35] shadow-inner"
+                  >
                     <p className="whitespace-pre-wrap">
                       {transcript.trim()
                         ? transcript
@@ -551,138 +566,11 @@ const CustomerSessionScreen = () => {
           </div>
         </section>
 
-        <section className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/5 p-8 shadow-[0_25px_60px_rgba(35,27,22,0.18)] backdrop-blur-xl">
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-[#3F2A1F]/40 to-transparent" />
-          <div className="relative flex flex-col gap-10 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-3 rounded-full bg-white/80 px-4 py-2 shadow-sm">
-                <span className="text-2xl">😊</span>
-                <span className="text-sm font-semibold uppercase tracking-wide text-[#6B5D52]">
-                  Customer
-                </span>
-              </div>
-              <div className="max-w-xl rounded-3xl border border-white/60 bg-white/90 px-6 py-5 shadow-lg">
-                <p
-                  className="text-base font-medium leading-relaxed"
-                  style={{ color: "#4A3F35" }}
-                >
-                  {CUSTOMER_GREETING}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative flex flex-col items-center gap-6 md:items-end">
-              <div className="relative">
-                <PlayerAvatar mood={transcript ? "focused" : "neutral"} />
-                <div className="absolute -left-10 -top-8 md:-left-12">
-                  <div className="rounded-3xl border border-emerald-100 bg-emerald-50/95 px-5 py-4 text-sm font-semibold leading-relaxed text-emerald-900 shadow-lg md:max-w-xs">
-                    {liveBubbleText}
-                  </div>
-                  <span
-                    className="absolute left-14 top-full h-6 w-6 -translate-y-2 rotate-45 border-b border-r border-emerald-100 bg-emerald-50/95"
-                    aria-hidden="true"
-                  />
-                </div>
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                Live Barista Response
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <Card>
-          <div className="space-y-4">
-            <h3
-              className="text-lg font-semibold"
-              style={{ color: "#4A3F35" }}
-            >
-              Customer Audio & Responses
-            </h3>
-            <p className="text-sm text-slate-600">
-              Listen back to the customer&apos;s latest request and keep the
-              dialogue flowing.
-            </p>
-
-            <div className="space-y-2">
-              {speechError ? (
-                <p className="text-xs text-red-600">
-                  Unable to play audio: {speechError}
-                </p>
-              ) : null}
-              {assistantAudioUrl ? (
-                <audio
-                  ref={customerAudioRef}
-                  src={assistantAudioUrl ?? undefined}
-                  className="w-full"
-                  controls
-                  autoPlay
-                  playsInline
-                  aria-label="Customer response audio"
-                />
-              ) : null}
-              {isSpeaking && !assistantAudioUrl ? (
-                <p className="text-xs text-slate-500">
-                  Brewing the customer&apos;s next line...
-                </p>
-              ) : null}
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-white/80 p-4">
-              <h4 className="text-sm font-semibold text-slate-800">
-                Latest Customer Message
-              </h4>
-              <p className="mt-2 text-sm text-slate-600">{latestMessage}</p>
-            </div>
-          </div>
-        </Card>
 
 
-        <Card>
-          <div className="space-y-4">
-            <h3
-              className="text-lg font-semibold"
-              style={{ color: "#4A3F35" }}
-            >
-              Playback
-            </h3>
-            {audioUrl ? (
-              <audio
-                controls
-                className="w-full"
-                src={audioUrl}
-                aria-label="Session recording playback"
-              />
-            ) : (
-              <div className="flex min-h-[220px] flex-col items-center justify-center space-y-4">
-                <div className="text-5xl">🎧</div>
-                <p
-                  className="text-sm text-center"
-                  style={{ color: "#6B5D52" }}
-                >
-                  Your recorded responses will appear here once you stop the mic.
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
 
-        <section aria-labelledby="customer-progress-heading" className="space-y-4">
-          <h3
-            id="customer-progress-heading"
-            className="text-lg font-semibold"
-            style={{ color: "#4A3F35" }}
-          >
-            Guest Satisfaction Checklist
-          </h3>
-          <ProgressChips
-            orderState={orderState}
-            currentStep={orderState?.currentStep ?? 0}
-            completed={orderState?.completed ?? false}
-          />
-        </section>
 
-        <ToastPlaceholder message={statusMessage} />
+        {/* <ToastPlaceholder message={statusMessage} /> */}
       </main>
 
       <audio

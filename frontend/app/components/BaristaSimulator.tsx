@@ -627,7 +627,7 @@ const BaristaSimulator = () => {
     const score = Math.round(completionRatio * 100)
 
     return (
-      <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center pt-6">
+      <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center ">
         <div className="relative flex w-[640px] max-w-[90vw] flex-col gap-6 rounded-[48px] border-8 border-[#f4c267] bg-[#fff6e6] p-10 shadow-[0_40px_120px_rgba(43,24,6,0.25)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
             <div className="relative mx-auto h-48 w-48 lg:mx-0">

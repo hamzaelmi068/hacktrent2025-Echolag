@@ -57,17 +57,17 @@ const CafeBackground = ({ children, variant = "day" }: CafeBackgroundProps) => {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 flex h-56 items-end justify-center gap-10 px-12"
       >
-        <div className="h-40 w-72 rounded-t-[28px] bg-[#CFA676] shadow-[0_4px_35px_rgba(49,30,16,0.35)]">
+        {/* <div className="h-40 w-72 rounded-t-[28px] bg-[#CFA676] shadow-[0_4px_35px_rgba(49,30,16,0.35)]">
           <div className="mx-auto mt-6 h-6 w-20 rounded-full bg-[#B88B58]" />
-        </div>
-        <div className="h-48 w-80 rounded-t-[30px] bg-[#D8B183] shadow-[0_4px_35px_rgba(49,30,16,0.35)]">
+        </div> */}
+        {/* <div className="h-48 w-80 rounded-t-[30px] bg-[#D8B183] shadow-[0_4px_35px_rgba(49,30,16,0.35)]">
           <div className="mx-auto mt-6 flex w-32 items-center justify-around">
             <div className="h-6 w-6 rounded-full bg-[#8F5D36]" />
             <div className="h-6 w-6 rounded-full bg-[#8F5D36]" />
             <div className="h-6 w-6 rounded-full bg-[#8F5D36]" />
           </div>
-        </div>
-        <div className="h-36 w-64 rounded-t-[26px] bg-[#CFA676] shadow-[0_4px_35px_rgba(49,30,16,0.35)]" />
+        </div> */}
+        {/* <div className="h-36 w-64 rounded-t-[26px] bg-[#CFA676] shadow-[0_4px_35px_rgba(49,30,16,0.35)]" /> */}
       </div>
 
       <div className="relative z-10 flex-1">{children}</div>
