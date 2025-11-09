@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useConversation } from "../context/ConversationContext"
 
 type PhaserModule = typeof import("phaser")
@@ -548,6 +548,16 @@ const BaristaSimulator = () => {
     // )
   }
 
+  const lastUserMessage = useMemo(
+    () => messages.slice().reverse().find((msg) => msg.role === "user")?.content ?? null,
+    [messages],
+  )
+
+  const lastAssistantMessage = useMemo(
+    () => messages.slice().reverse().find((msg) => msg.role === "assistant")?.content ?? null,
+    [messages],
+  )
+
   const renderCustomerOverlay = () => {
     if (!isDialogueActive) {
       return null
@@ -563,15 +573,15 @@ const BaristaSimulator = () => {
             <div className="relative mx-auto h-48 w-48 lg:mx-0">
               <div className="absolute inset-0 rounded-full bg-[#f7d8ab]" />
               <div className="absolute -top-6 left-1/2 h-20 w-40 -translate-x-1/2 rounded-[60px] bg-[#582c15] shadow-[0_12px_0_rgba(0,0,0,0.12)]" />
-              <div className="absolute -top-8 left-1/2 flex -translate-x-1/2 gap-2">
-                {Array.from({ length: 5 }).map((_, index) => (
+              {/* <div className="absolute -top-8 left-1/2 flex -translate-x-1/2 gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
                   <span
                     key={`hair-${index}`}
                     className="h-10 w-10 rounded-full bg-[#3c1c0c] shadow-[0_4px_0_rgba(0,0,0,0.15)]"
                     style={{ transform: `translateY(${index % 2 === 0 ? 0 : 6}px)` }}
                   />
                 ))}
-              </div>
+              </div> */}
               <div className="absolute top-[42%] left-1/2 flex w-36 -translate-x-1/2 justify-between">
                 <div className="relative h-14 w-14 rounded-full border-[6px] border-[#f4c267] bg-[#ffe8a2]/70">
                   <div className="absolute left-1/2 top-1/2 h-7 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3a210f]/70" />
@@ -601,23 +611,28 @@ const BaristaSimulator = () => {
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="flex-1 rounded-[32px] border-4 border-[#f4dba8] bg-white/95 px-6 py-5 shadow-inner text-[#5a3713]">
-              <div className="text-xs font-black uppercase tracking-[0.4em] text-[#c17b2a]">Live Transcript</div>
+              <div className="text-xs font-black uppercase tracking-[0.4em] text-[#c17b2a]">Your Responsegit</div>
               <p className="mt-3 text-sm leading-6">
-                {messages.length > 0 ? messages[messages.length - 1].content : "Waiting for conversation to begin..."}
+                {lastUserMessage ?? "Waiting for your first line..."}
               </p>
             </div>
             <div className="flex-1 rounded-[32px] border-4 border-[#f4dba8] bg-white/95 px-6 py-5 shadow-inner text-[#5a3713]">
               <div className="text-xs font-black uppercase tracking-[0.4em] text-[#c17b2a]">Barista Reply</div>
               <p className="mt-3 text-sm leading-6">
-                {assistantAudioUrl
-                  ? "Brewing response audio..."
-                  : messages.slice().reverse().find((msg) => msg.role === "assistant")?.content ??
-                    "Your AI barista is standing by."}
+                {isSpeaking ? (
+                  <span className="inline-flex items-center gap-1">
+                    Brewing response
+                    <span className="ml-1 inline-flex animate-pulse">...</span>
+                  </span>
+                ) : (
+                  lastAssistantMessage ?? "Your AI barista is standing by."
+                )}
               </p>
             </div>
             {isSpeaking && (
               <div className="relative rounded-[28px] border-4 border-[#f4dba8] bg-[#fffaf1] px-5 py-4 text-sm font-semibold text-[#5a3713] shadow-lg lg:self-center">
-                Generating reply...
+                Generating reply
+                <span className="ml-1 inline-flex animate-pulse">...</span>
                 <span className="absolute -bottom-4 left-6 h-6 w-6 rotate-45 border-b-4 border-r-4 border-[#f4dba8] bg-[#fffaf1]"></span>
               </div>
             )}
