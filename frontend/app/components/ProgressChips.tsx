@@ -1,18 +1,23 @@
-import type { OrderState } from '../types/conversation';
+import type { OrderState } from "../types/conversation"
 
 interface ProgressChipsProps {
-  orderState: OrderState;
+  orderState?: OrderState | null
+  currentStep?: number
+  completed?: boolean
 }
 
-const ProgressChips = ({
-  orderState,
-}: ProgressChipsProps) => {
+const ProgressChips = ({ orderState, currentStep = 0, completed = false }: ProgressChipsProps) => {
+  const nameComplete = orderState?.name ?? completed
+  const drinkComplete = orderState?.drink ?? nameComplete ?? currentStep > 0
+  const sizeComplete = orderState?.size ?? nameComplete ?? currentStep > 1
+  const milkComplete = orderState?.milk ?? nameComplete ?? currentStep > 2
+
   const steps = [
-    { label: "Drink", active: orderState.drink },
-    { label: "Size", active: orderState.size },
-    { label: "Milk", active: orderState.milk },
-    { label: "Name", active: orderState.name },
-  ];
+    { label: "Drink", active: drinkComplete },
+    { label: "Size", active: sizeComplete },
+    { label: "Milk", active: milkComplete },
+    { label: "Name", active: nameComplete },
+  ]
 
   return (
     <>
@@ -35,19 +40,17 @@ const ProgressChips = ({
                         border: "none",
                       }
                 }
-                aria-label={`${chip.label} ${
-                  chip.active ? "completed" : "not completed"
-                }`}
+                aria-label={`${chip.label} ${chip.active ? "completed" : "not completed"}`}
               >
                 {chip.active && <span className="mr-2">✓</span>}
                 {chip.label}
               </span>
             </li>
-          );
+          )
         })}
       </ul>
     </>
-  );
-};
+  )
+}
 
-export default ProgressChips;
+export default ProgressChips
