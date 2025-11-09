@@ -323,11 +323,11 @@ const BaristaSimulator = () => {
 
           this.add.image(200, 110, "window").setAlpha(0.92).setTint(0xd6eefc)
 
-          const menuBoard = this.add.image(750, 100, "menu").setTint(0x1b1713)
-          menuBoard.setScale(1.85, 1.25)
-          const backing = this.add.rectangle(750, 100, 320, 180, 0x000000, 0.45).setDepth(menuBoard.depth - 1)
+          const menuBoard = this.add.image(750, 130, "menu").setTint(0x1b1713)
+          menuBoard.setScale(1.85, 1.8)
+          const backing = this.add.rectangle(750, 130, 320, 260, 0x000000, 0.45).setDepth(menuBoard.depth - 1)
           backing.setStrokeStyle(4, 0x2c2c2c, 0.6)
-          const menuTitle = this.add.text(680, 54, "Cafe Menu", {
+          const menuTitle = this.add.text(680, 72, "Cafe Menu", {
             fontSize: "28px",
             color: "#f5d7a1",
             fontFamily: "Georgia, serif",
@@ -342,20 +342,20 @@ const BaristaSimulator = () => {
             { name: "Matcha Latte", price: "$4.20" },
           ]
           menuItems.forEach((item, index) => {
-            this.add.text(650, 94 + index * 28, item.name, {
+            this.add.text(650, 112 + index * 32, item.name, {
               fontSize: "18px",
               color: "#f0e4d2",
               fontFamily: "'Lucida Console', 'Monaco', 'monospace'",
               wordWrap: { width: 180 },
             })
-            this.add.text(835, 94 + index * 28, item.price, {
+            this.add.text(835, 112 + index * 32, item.price, {
               fontSize: "18px",
               color: "#f6debe",
               fontFamily: "'Lucida Console', 'Monaco', 'monospace'",
             })
           })
 
-          const counter = this.physics.add.staticImage(660, 240, "counter").setOrigin(0.5, 0.6)
+        //   const counter = this.physics.add.staticImage(660, 240, "counter").setOrigin(0.5, 0.6)
 
           const tableL = this.add.image(340, 210, "tableL").setDepth(2).setAlpha(0.95)
           tableL.setScale(0.9, 0.85)
@@ -438,7 +438,7 @@ const BaristaSimulator = () => {
             })
           })
 
-          this.physics.add.collider(this.player, counter)
+        //   this.physics.add.collider(this.player, counter)
           this.physics.add.collider(this.player, customer1)
           this.physics.add.collider(this.player, customer2)
           this.physics.add.collider(this.player, this.barista)
@@ -448,10 +448,10 @@ const BaristaSimulator = () => {
             playerBody.setOffset(0, 4)
           }
 
-          const counterBody = counter.body as ArcadeBody | ArcadeStaticBody | null
-          if (counterBody) {
-            counterBody.setOffset(0, 10)
-          }
+        //   const counterBody = counter.body as ArcadeBody | ArcadeStaticBody | null
+        //   if (counterBody) {
+        //     counterBody.setOffset(0, 10)
+        //   }
 
           this.add.image(210, 145, "plant").setDepth(0.5).setTint(0x4f7b59)
 
