@@ -611,7 +611,7 @@ const BaristaSimulator = () => {
 
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
             <div className="flex-1 rounded-[32px] border-4 border-[#f4dba8] bg-white/95 px-6 py-5 shadow-inner text-[#5a3713]">
-              <div className="text-xs font-black uppercase tracking-[0.4em] text-[#c17b2a]">Your Responsegit</div>
+              <div className="text-xs font-black uppercase tracking-[0.4em] text-[#c17b2a]">Your Response</div>
               <p className="mt-3 text-sm leading-6">
                 {lastUserMessage ?? "Waiting for your first line..."}
               </p>
@@ -629,13 +629,6 @@ const BaristaSimulator = () => {
                 )}
               </p>
             </div>
-            {isSpeaking && (
-              <div className="relative rounded-[28px] border-4 border-[#f4dba8] bg-[#fffaf1] px-5 py-4 text-sm font-semibold text-[#5a3713] shadow-lg lg:self-center">
-                Generating reply
-                <span className="ml-1 inline-flex animate-pulse">...</span>
-                <span className="absolute -bottom-4 left-6 h-6 w-6 rotate-45 border-b-4 border-r-4 border-[#f4dba8] bg-[#fffaf1]"></span>
-              </div>
-            )}
           </div>
         </div>
       </div>
