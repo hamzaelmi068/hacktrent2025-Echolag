@@ -63,8 +63,10 @@ const BaristaSimulator = () => {
   })
 
   const isDialogueActive = dialogue.step !== "idle" && dialogue.step !== "summary"
+  const movePlayerToBaristaRef = useRef<() => void>(() => {})
 
   const startDialogue = useCallback(() => {
+    movePlayerToBaristaRef.current()
     setDialogue({
       step: "drink",
       startedAt: performance.now(),
@@ -97,10 +99,16 @@ const BaristaSimulator = () => {
         ambientSourceRef.current = null
       }
     },
+    registerMovePlayer: (handler: () => void) => {
+      movePlayerToBaristaRef.current = handler
+    },
   })
   callbacksRef.current.startDialogue = startDialogue
   callbacksRef.current.setPromptVisible = setPromptVisible
   callbacksRef.current.isDialogueActive = isDialogueActive
+  callbacksRef.current.registerMovePlayer = (handler: () => void) => {
+    movePlayerToBaristaRef.current = handler
+  }
 
   const isOrderComplete = orderState.drink && orderState.size && orderState.milk && orderState.name
   const completedSteps = [orderState.drink, orderState.size, orderState.milk, orderState.name].filter(Boolean).length
@@ -315,14 +323,17 @@ const BaristaSimulator = () => {
 
           this.add.image(200, 110, "window").setAlpha(0.92).setTint(0xd6eefc)
 
-          const menuBoard = this.add.image(750, 95, "menu").setTint(0x1b1713)
-          menuBoard.setScale(1.05, 1)
-          this.add.text(705, 60, "Cafe Menu", {
-            fontSize: "24px",
+          const menuBoard = this.add.image(750, 100, "menu").setTint(0x1b1713)
+          menuBoard.setScale(1.85, 1.25)
+          const backing = this.add.rectangle(750, 100, 320, 180, 0x000000, 0.45).setDepth(menuBoard.depth - 1)
+          backing.setStrokeStyle(4, 0x2c2c2c, 0.6)
+          const menuTitle = this.add.text(680, 54, "Cafe Menu", {
+            fontSize: "28px",
             color: "#f5d7a1",
             fontFamily: "Georgia, serif",
             fontStyle: "italic",
           })
+          menuTitle.setScale(1.05, 1)
 
           const menuItems = [
             { name: "Caramel Latte", price: "$4.50" },
@@ -331,13 +342,14 @@ const BaristaSimulator = () => {
             { name: "Matcha Latte", price: "$4.20" },
           ]
           menuItems.forEach((item, index) => {
-            this.add.text(705, 90 + index * 22, item.name, {
-              fontSize: "16px",
+            this.add.text(650, 94 + index * 28, item.name, {
+              fontSize: "18px",
               color: "#f0e4d2",
               fontFamily: "'Lucida Console', 'Monaco', 'monospace'",
+              wordWrap: { width: 180 },
             })
-            this.add.text(865, 90 + index * 22, item.price, {
-              fontSize: "16px",
+            this.add.text(835, 94 + index * 28, item.price, {
+              fontSize: "18px",
               color: "#f6debe",
               fontFamily: "'Lucida Console', 'Monaco', 'monospace'",
             })
@@ -356,8 +368,75 @@ const BaristaSimulator = () => {
           customer2.setDepth(3)
           customer2.setTint(0xb681a8)
 
+          const welcomeStation = this.add.container(160, 160).setDepth(10)
+
+          const stationBase = this.add.rectangle(0, 70, 200, 90, 0x6f4328, 1).setOrigin(0.5)
+          const stationInset = this.add.rectangle(0, 70, 150, 60, 0x8b5128, 0.9).setOrigin(0.5)
+          const stationLabel = this.add
+            .text(0, 64, "COFFEE SHOP", {
+              fontFamily: "Georgia, serif",
+              fontSize: "16px",
+              color: "#f0d9b5",
+              fontStyle: "bold",
+            })
+            .setOrigin(0.5)
+
+          const machineBase = this.add.rectangle(-70, 0, 46, 78, 0xf3b487, 1).setOrigin(0.5)
+          const machineGlass = this.add.rectangle(-70, -18, 36, 34, 0xffffff, 0.85).setOrigin(0.5)
+          const grinderHopper = this.add.rectangle(-70, -48, 40, 22, 0xb8d5ed, 0.8).setOrigin(0.5)
+          const grinderHead = this.add.rectangle(-70, -60, 28, 8, 0x3d4a5a, 1).setOrigin(0.5)
+
+          const pourOverStand = this.add.rectangle(-10, -6, 26, 44, 0x3d4a5a, 1).setOrigin(0.5)
+          const pourOverCup = this.add.triangle(0, -28, -12, 10, 12, 10, 0, -12, 0xff8f45, 1).setOrigin(0.5)
+          const pourOverTop = this.add.rectangle(0, -36, 34, 10, 0xffffff, 0.9).setOrigin(0.5)
+
+          const cupsGroup = this.add.container(90, 10)
+          for (let i = 0; i < 4; i += 1) {
+            cupsGroup.add(
+              this.add.rectangle(i * 18, 0, 12, 40, 0xff8f45, 1).setOrigin(0.5).setStrokeStyle(2, 0xe06f2e, 0.6),
+            )
+          }
+
+          const baristaSprite = this.add.image(-10, 10, "barista").setScale(0.9)
+
+          welcomeStation.add([
+            stationBase,
+            stationInset,
+            stationLabel,
+            machineBase,
+            machineGlass,
+            grinderHopper,
+            grinderHead,
+            pourOverStand,
+            pourOverCup,
+            pourOverTop,
+            cupsGroup,
+            baristaSprite,
+          ])
+
           this.player = this.physics.add.sprite(240, 360, "player")
           this.player.setDepth(4)
+
+          callbacks.current.registerMovePlayer(() => {
+            if (!this.player || !this.barista) {
+              return
+            }
+
+            const approachX = this.barista.x - 16
+            const approachY = this.barista.y + 80
+
+            this.tweens.add({
+              targets: this.player,
+              x: approachX,
+              y: approachY,
+              duration: 400,
+              ease: PhaserNS.Math.Easing.Quadratic.Out,
+              onComplete: () => {
+                this.player.setVelocity(0, 0)
+                this.player.setDepth(this.player.y)
+              },
+            })
+          })
 
           this.physics.add.collider(this.player, counter)
           this.physics.add.collider(this.player, customer1)
@@ -602,7 +681,7 @@ const BaristaSimulator = () => {
                 <div className="flex flex-wrap items-center gap-4">
                   <div className="text-xs font-bold uppercase tracking-[0.4em] text-[#c17b2a]">Barista</div>
                 </div>
-                <div className="text-4xl font-black text-[#352115]">Timm</div>
+                <div className="text-4xl font-black text-[#352115]">Trent</div>
                 
               </div>
               
