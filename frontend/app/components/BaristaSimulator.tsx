@@ -436,13 +436,14 @@ const BaristaSimulator = () => {
 
           this.add.image(210, 145, "plant").setDepth(0.5).setTint(0x4f7b59)
 
+          // Initialize infoText but keep it empty and invisible
           this.infoText = this.add
-            .text(480, 520, "Press E to talk", {
+            .text(480, 520, "", {
               fontSize: "20px",
               color: "#ffffff",
               fontFamily: "Inter, sans-serif",
             })
-            .setOrigin(0.5)
+                        .setOrigin(0.5)
             .setPadding(10, 6, 10, 6)
             .setBackgroundColor("rgba(28, 39, 45, 0.85)")
             .setDepth(20)
