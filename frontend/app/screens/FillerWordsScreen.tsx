@@ -36,6 +36,7 @@ const SINGLE_WORD_FILLERS = [
 ] as const
 
 const FILLER_REGEX = new RegExp(`(?:\\b(?:${SINGLE_WORD_FILLERS.join("|")})\\b|you\\s+know)`, "gi")
+const FILLER_ANALYSIS_STORAGE_KEY = "echolag:filler-analysis"
 
 const FillerWordsScreen = () => {
   const router = useRouter()
@@ -62,6 +63,25 @@ const FillerWordsScreen = () => {
   const countdownIntervalRef = useRef<number | null>(null)
   const autoSubmitRef = useRef(false)
   const transcriptRef = useRef("")
+  const recordingStartedAtRef = useRef<number | null>(null)
+
+  const computeFillerStats = useCallback((text: string) => {
+    if (!text.trim()) {
+      return { total: 0, breakdown: [] as Array<{ word: string; count: number }> }
+    }
+    const matches = text.match(FILLER_REGEX) ?? []
+    const counts = new Map<string, number>()
+    matches.forEach((match) => {
+      const normalized = match.trim().toLowerCase().replace(/\s+/g, " ")
+      counts.set(normalized, (counts.get(normalized) ?? 0) + 1)
+    })
+    return {
+      total: matches.length,
+      breakdown: Array.from(counts.entries())
+        .map(([word, count]) => ({ word, count }))
+        .sort((a, b) => b.count - a.count),
+    }
+  }, [])
 
   useEffect(() => {
     transcriptRef.current = transcript
@@ -179,17 +199,46 @@ const FillerWordsScreen = () => {
       stopListening()
       if (snapshot) {
         setStatusMessage(
-          autoSubmit ? "Timer's up! Submitting your take for review..." : "Analyzing your take for filler words...",
+          autoSubmit
+            ? "Timer's up! Saving your take and prepping the Gemini report..."
+            : "Saving your take and prepping the Gemini report...",
         )
         await sendMessage(snapshot)
-        setStatusMessage("Response sent. Keep refining your delivery.")
+
+        const durationSeconds = (() => {
+          if (recordingStartedAtRef.current === null) return Math.max(TIMER_DURATION - (countdown ?? TIMER_DURATION), 0)
+          const elapsed = (performance.now() - recordingStartedAtRef.current) / 1000
+          return Math.max(1, elapsed)
+        })()
+        const words = snapshot.split(/\s+/).filter(Boolean)
+        const wordsPerMinute = durationSeconds > 0 ? Math.round((words.length / durationSeconds) * 60) : 0
+        const fillerStats = computeFillerStats(snapshot)
+
+        if (typeof window !== "undefined") {
+          const payload = {
+            transcript: snapshot,
+            metrics: {
+              durationSeconds,
+              wordCount: words.length,
+              wordsPerMinute,
+            },
+            fillerStats,
+            timestamp: Date.now(),
+          }
+          window.sessionStorage.setItem(FILLER_ANALYSIS_STORAGE_KEY, JSON.stringify(payload))
+        }
+        
+        setStatusMessage("Redirecting to your AI coaching report…")
+        router.push(ROUTES.FILLER_WORDS_REPORT)
+        recordingStartedAtRef.current = null
       } else {
         setStatusMessage(
           autoSubmit ? "Timer ran out, but no speech detected. Try another take." : "No speech detected. Try again.",
         )
+        recordingStartedAtRef.current = null
       }
     },
-    [sendMessage, stopListening],
+    [computeFillerStats, countdown, router, sendMessage, stopListening],
   )
 
   const startListening = useCallback(async () => {
@@ -200,6 +249,10 @@ const FillerWordsScreen = () => {
     if (!mediaSupported) {
       setStatusMessage("Microphone access is not supported in this browser.")
       return
+    }
+
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(FILLER_ANALYSIS_STORAGE_KEY)
     }
 
     if (typeof window === "undefined") {
@@ -322,6 +375,7 @@ const FillerWordsScreen = () => {
       setCountdown(TIMER_DURATION)
       autoSubmitRef.current = false
       setTranscript("")
+      recordingStartedAtRef.current = performance.now()
       setStatusMessage("Recording… keep your sentences clean and confident.")
       setIsListening(true)
       if (typeof window !== "undefined") {
@@ -384,28 +438,10 @@ const FillerWordsScreen = () => {
     })
   }, [])
 
-  const fillerCount = useMemo(() => {
-    if (!transcript.trim()) {
-      return 0
-    }
-    const matches = transcript.match(FILLER_REGEX)
-    return matches?.length ?? 0
-  }, [transcript])
-
-  const fillerBreakdown = useMemo(() => {
-    if (!transcript.trim()) {
-      return []
-    }
-    const counts = new Map<string, number>()
-    const matches = transcript.match(FILLER_REGEX)
-    matches?.forEach((match) => {
-      const normalized = match.trim().toLowerCase().replace(/\s+/g, " ")
-      counts.set(normalized, (counts.get(normalized) ?? 0) + 1)
-    })
-    return Array.from(counts.entries())
-      .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-  }, [transcript])
+  const { total: fillerCount, breakdown: fillerBreakdown } = useMemo(
+    () => computeFillerStats(transcript),
+    [computeFillerStats, transcript],
+  )
 
   const highlightedTranscript = useMemo(() => {
     if (!transcript.trim()) {
@@ -770,6 +806,7 @@ const FillerWordsScreen = () => {
                   </span>
                 </Toolbar>
               </div>
+
             </div>
           </div>
         </section>
