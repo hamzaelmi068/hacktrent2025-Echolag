@@ -1,6 +1,11 @@
 import axios from 'axios';
 import type { ConversationRequest, ConversationResponse, OrderState } from '../types/conversation';
 
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
 const api = axios.create({
   baseURL: 'http://localhost:3001',
   headers: {
