@@ -443,33 +443,6 @@ const HomeScreen = () => {
         </div>
       </section>
 
-      {/* Single CTA */}
-      <section className="w-full px-4 sm:px-6 lg:px-8 pb-24">
-        <div className="max-w-5xl mx-auto rounded-3xl bg-gradient-to-r from-[#80a66e] to-[#6B7D5C] shadow-[0_35px_80px_rgba(88,110,78,0.35)] text-white p-10 md:p-14 text-center">
-          <p className="text-sm uppercase tracking-[0.4em] text-white/80">Ready to demo</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-black leading-tight">
-            Experience both barista and rush practice in under five minutes
-          </h2>
-          <p className="mt-4 text-base md:text-lg text-white/80 max-w-3xl mx-auto">
-            Start with the supportive barista flow, then jump into the high-pressure customer rush. Judges can see the
-            entire feedback cycle in one sitting.
-          </p>
-          <div className="mt-10 flex flex-col md:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => router.push(ROUTES.SESSION)}
-              className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold bg-white text-[#3c372d] shadow-lg transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
-            >
-              Launch Barista Practice
-            </button>
-            <button
-              onClick={() => router.push(ROUTES.CUSTOMER)}
-              className="inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold border border-white/30 text-white/90 hover:bg-white/10 transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
-            >
-              Try Customer Rush
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="w-full py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#5e594e' }}>
