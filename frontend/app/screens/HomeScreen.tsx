@@ -57,7 +57,7 @@ const HomeScreen = () => {
     <div className="w-full" style={{ backgroundColor: '#f8f6f1' }}>
       {/* Hero Section with Warm Beige Background */}
       <section className="relative w-full flex items-center justify-center py-24 md:py-32 px-4 sm:px-6 lg:px-8 overflow-hidden" style={{ backgroundColor: '#f8f6f1' }}>
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
+        <div className="relative z-10 max-w-7xl mx-auto text-center">
           {/* Social Proof Badge */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -91,7 +91,7 @@ const HomeScreen = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl lg:text-2xl mt-6 mb-10 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl lg:text-2xl mt-6 mb-10 max-w-5xl mx-auto leading-relaxed"
             style={{ color: '#6b7280' }}
           >
             Perfect for managing speech anxiety, stuttering, or learning a new language. Build confidence through realistic AI conversations in a judgment-free environment.
