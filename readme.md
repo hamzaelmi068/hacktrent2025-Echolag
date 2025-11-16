@@ -230,10 +230,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ---
 
-## Contact
-
-For questions or feedback, reach out to the team at: [your-email@example.com]
-
 ---
 
 **Built in 24 hours. Polished for a lifetime of better conversations.**
