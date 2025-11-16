@@ -2,7 +2,7 @@
 
 **A browser-based speech coaching lab that helps you master conversations through immersive practice, real-time feedback, and zero judgment.**
 
-**Built at ConestogaHacks 2025**
+**Built at HackTrent 2025**
 
 ---
 
