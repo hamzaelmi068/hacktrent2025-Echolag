@@ -16,7 +16,7 @@
 
 ## Project Overview
 
-EchoLag is an interactive speech training platform designed to help users practice high-pressure conversations in a safe, judgment-free environment. The application simulates real-world scenarios (such as ordering at a busy coffee shop), provides live transcription with filler word detection, and delivers AI-powered feedback to help users improve their communication skills.
+EchoLag is an interactive speech training platform designed to help users practice high-pressure conversations in a safe, judgment-free environment. The application simulates real-world scenarios (such as ordering at a busy coffee shop), provides live transcription with filler word detection, and delivers AI-powered feedback to help users improve their communication skills
 
 Whether you're preparing for job interviews, sales pitches, or customer service interactions, EchoLag gives you a realistic practice environment with instant, actionable coaching.
 
